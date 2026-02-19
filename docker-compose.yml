@@ -1,0 +1,33 @@
+
+services:
+  app:
+    build: .
+    image: ereja-app:prod
+    ports:
+      - "9003:9003"
+    volumes:
+      - /app/node_modules
+    environment:
+      - NODE_ENV=production
+      - NPM_CONFIG_LEGACY_PEER_DEPS=true
+      - PORT=9003
+    command: /app/entrypoint.sh
+    restart: unless-stopped
+    tty: true
+
+  app-dev:
+    build: .
+    image: ereja-app:dev
+    ports:
+      - "9003:9003"
+    volumes:
+      - ./:/app:cached
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - NPM_CONFIG_LEGACY_PEER_DEPS=true
+      - PORT=9003
+    command: /app/entrypoint.sh dev
+    restart: unless-stopped
+    tty: true
+
