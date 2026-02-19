@@ -1,1 +1,31 @@
 node_modules
+
+# Next.js build/artifacts
+.next/
+
+# Next.js logs and cache
+.next/**/*.log
+.next/**/*.pid
+.next/cache/
+
+# Next.js dev artifacts
+.next/dev/
+.next/dev/**
+
+# PM2 logs
+pm2.log
+pm2.pid
+
+# General log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local dev log
+dev.log
+
+# Editor directories and files
+.vscode/
+.idea/
