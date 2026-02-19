@@ -417,7 +417,7 @@ const MiniChart = ({ data, color }: { data: number[]; color: string }) => {
 
 // Card Components with various styles
 const StatCard = ({ card, compact = false }: { card: Card; compact?: boolean }) => (
-  <div className={`card-base p-6 bg-[#111b21] rounded-[24px] text-white shadow-xl ${compact ? 'p-4 rounded-xl' : ''}`}>
+  <div className={`card-base h-full flex flex-col justify-between p-6 bg-[#111b21] rounded-[24px] text-white shadow-2xl ${compact ? 'p-4 rounded-xl' : ''}`}>
     <div className="flex justify-between items-start mb-4">
       <span className="text-[10px] font-black text-emerald-400 tracking-widest uppercase">{card.title}</span>
       <button className="text-gray-500 hover:text-white transition-colors">
@@ -426,7 +426,7 @@ const StatCard = ({ card, compact = false }: { card: Card; compact?: boolean }) 
         </svg>
       </button>
     </div>
-    <div className="flex items-end gap-3">
+    <div className="flex items-end gap-3 flex-1">
       <h4 className={`${compact ? 'text-2xl' : 'text-4xl'} font-extrabold`}>{card.value}</h4>
       <span className="text-emerald-400 text-sm font-bold mb-1">{card.trend}</span>
     </div>
@@ -446,8 +446,8 @@ const ProductCard = ({ card, onClick, style = 'default' }: { card: Card; onClick
   }
 
   return (
-    <div className={`${baseClasses} ${styleClasses[style]}`} onClick={onClick}>
-      <div className="relative">
+    <div className={`${baseClasses} ${styleClasses[style]} h-full flex flex-col shadow-xl`} onClick={onClick}>
+      <div className="relative flex-shrink-0">
         <img src={card.image} alt={card.title} className={`${style === 'compact' ? 'h-32' : 'h-44'} w-full object-cover`} />
         {card.originalPrice && (
           <span className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-lg">SALE</span>
@@ -461,7 +461,7 @@ const ProductCard = ({ card, onClick, style = 'default' }: { card: Card; onClick
           </span>
         )}
       </div>
-      <div className={`${style === 'compact' ? 'p-3' : 'p-4'}`}>
+      <div className={`${style === 'compact' ? 'p-3' : 'p-4'} flex-1 flex flex-col justify-between`}>
         <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 block">{card.category}</span>
         <h4 className="font-bold text-gray-800 mb-1 line-clamp-2 text-sm">{card.title}</h4>
         <div className="flex items-center gap-2 mb-2">
@@ -485,8 +485,8 @@ const ProductCard = ({ card, onClick, style = 'default' }: { card: Card; onClick
 }
 
 const AuctionCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base bg-white rounded-[24px] overflow-hidden border-2 border-orange-400 shadow-lg cursor-pointer" onClick={onClick}>
-    <div className="relative">
+  <div className="card-base h-full flex flex-col bg-white rounded-[24px] overflow-hidden border-2 border-orange-400 shadow-xl cursor-pointer" onClick={onClick}>
+    <div className="relative flex-shrink-0">
       <img src={card.image} alt={card.title} className="h-40 w-full object-cover" />
       <div className="absolute top-3 left-3 bg-orange-500 text-white text-[10px] font-black px-3 py-1.5 rounded-lg flex items-center gap-1 countdown-pulse">
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -498,7 +498,7 @@ const AuctionCard = ({ card, onClick }: { card: Card; onClick: () => void }) => 
         <span className="text-white/80 text-xs font-medium">{card.bids} bids</span>
       </div>
     </div>
-    <div className="p-4">
+    <div className="p-4 flex-1 flex flex-col justify-between">
       <span className="text-[10px] text-orange-500 font-bold uppercase tracking-wider mb-1 block">Live Auction</span>
       <h4 className="font-bold text-gray-800 mb-2 line-clamp-1">{card.title}</h4>
       <div className="flex justify-between items-end">
@@ -515,7 +515,7 @@ const AuctionCard = ({ card, onClick }: { card: Card; onClick: () => void }) => 
 )
 
 const VendorCard = ({ card, onClick, compact = false }: { card: Card; onClick: () => void; compact?: boolean }) => (
-  <div className={`card-base bg-white ${compact ? 'rounded-xl p-4' : 'rounded-[24px] p-5'} border-2 border-emerald-500 shadow-xl cursor-pointer`} onClick={onClick}>
+  <div className={`card-base h-full flex flex-col bg-white ${compact ? 'rounded-xl p-4' : 'rounded-[24px] p-5'} border-2 border-emerald-500 shadow-xl cursor-pointer`} onClick={onClick}>
     <div className="flex items-center gap-3 mb-3">
       <img src={card.image} alt={card.title} className={`${compact ? 'w-10 h-10' : 'w-12 h-12'} rounded-full border-2 border-emerald-500 object-cover`} />
       <div>
@@ -527,14 +527,16 @@ const VendorCard = ({ card, onClick, compact = false }: { card: Card; onClick: (
       <StarRating rating={card.rating || 0} />
       <span className="text-xs text-gray-500 font-medium">({card.reviews})</span>
     </div>
-    {!compact && card.description && <p className="text-sm text-gray-600 mb-3 line-clamp-2">{card.description}</p>}
-    {!compact && card.tags && (
-      <div className="flex flex-wrap gap-1 mb-3">
-        {card.tags.slice(0, 3).map((tag, i) => (
-          <span key={i} className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-lg">{tag}</span>
-        ))}
-      </div>
-    )}
+    <div className="flex-1">
+      {!compact && card.description && <p className="text-sm text-gray-600 mb-3 line-clamp-2">{card.description}</p>}
+      {!compact && card.tags && (
+        <div className="flex flex-wrap gap-1 mb-3">
+          {card.tags.slice(0, 3).map((tag, i) => (
+            <span key={i} className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-lg">{tag}</span>
+          ))}
+        </div>
+      )}
+    </div>
     <button className="w-full py-2 border-2 border-[#111b21] text-[#111b21] rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#111b21] hover:text-white transition-all">
       Visit Store
     </button>
@@ -542,22 +544,24 @@ const VendorCard = ({ card, onClick, compact = false }: { card: Card; onClick: (
 )
 
 const ServiceCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-sm cursor-pointer" onClick={onClick}>
-    <div className="relative h-32">
+  <div className="card-base h-full flex flex-col bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-sm cursor-pointer" onClick={onClick}>
+    <div className="relative h-32 flex-shrink-0">
       <img src={card.image} alt={card.title} className="w-full h-full object-cover" />
       <div className="absolute top-3 left-3 bg-purple-500 text-white text-[10px] font-black px-3 py-1 rounded-lg">SERVICE</div>
     </div>
-    <div className="p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <img src={card.vendor?.avatar} alt={card.vendor?.name || 'Vendor'} className="w-5 h-5 rounded-full" />
-        <span className="text-xs font-medium text-gray-700">{card.vendor?.name}</span>
-      </div>
-      <h4 className="font-bold text-gray-800 text-sm mb-1">{card.title}</h4>
-      <div className="flex items-center gap-1 text-gray-500 text-xs mb-2">
-        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-        </svg>
-        {card.location}
+    <div className="p-4 flex-1 flex flex-col justify-between">
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <img src={card.vendor?.avatar} alt={card.vendor?.name || 'Vendor'} className="w-5 h-5 rounded-full" />
+          <span className="text-xs font-medium text-gray-700">{card.vendor?.name}</span>
+        </div>
+        <h4 className="font-bold text-gray-800 text-sm mb-1">{card.title}</h4>
+        <div className="flex items-center gap-1 text-gray-500 text-xs mb-2">
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          </svg>
+          {card.location}
+        </div>
       </div>
       <div className="flex items-center justify-between">
         <div>
@@ -571,7 +575,7 @@ const ServiceCard = ({ card, onClick }: { card: Card; onClick: () => void }) => 
 )
 
 const LogisticsCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base p-5 bg-white rounded-[24px] border border-gray-200 shadow-sm cursor-pointer" onClick={onClick}>
+  <div className="card-base h-full p-5 bg-white rounded-[24px] border border-gray-200 shadow-sm cursor-pointer flex flex-col justify-between" onClick={onClick}>
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -605,8 +609,8 @@ const LogisticsCard = ({ card, onClick }: { card: Card; onClick: () => void }) =
 )
 
 const EventCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base bg-white rounded-[24px] overflow-hidden shadow-lg cursor-pointer" onClick={onClick}>
-    <div className="relative h-32 event-gradient">
+  <div className="card-base h-full flex flex-col bg-white rounded-[24px] overflow-hidden shadow-lg cursor-pointer" onClick={onClick}>
+    <div className="relative h-32 event-gradient flex-shrink-0">
       <img src={card.image} alt={card.title} className="w-full h-full object-cover opacity-50" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
       <div className="absolute bottom-3 left-3 right-3">
@@ -614,31 +618,33 @@ const EventCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
         <h4 className="text-white font-bold">{card.title}</h4>
       </div>
     </div>
-    <div className="p-4">
-      <div className="flex items-center gap-3 text-xs text-gray-600 mb-3">
-        <div className="flex items-center gap-1">
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <span>{card.date}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-          </svg>
-          <span className="truncate">{card.location}</span>
-        </div>
-      </div>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex -space-x-2">
-            {[1, 2, 3].map((i) => (
-              <img key={i} src={`https://i.pravatar.cc/30?u=e${i}`} alt="Attendee" className="w-5 h-5 rounded-full border-2 border-white" />
-            ))}
+    <div className="p-4 flex-1 flex flex-col justify-between">
+      <div>
+        <div className="flex items-center gap-3 text-xs text-gray-600 mb-3">
+          <div className="flex items-center gap-1">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>{card.date}</span>
           </div>
-          <span className="text-xs text-gray-500">+{card.attendees}</span>
+          <div className="flex items-center gap-1">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            </svg>
+            <span className="truncate">{card.location}</span>
+          </div>
         </div>
-        <span className="text-purple-600 font-bold text-sm">{card.price}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex -space-x-2">
+              {[1, 2, 3].map((i) => (
+                <img key={i} src={`https://i.pravatar.cc/30?u=e${i}`} alt="Attendee" className="w-5 h-5 rounded-full border-2 border-white" />
+              ))}
+            </div>
+            <span className="text-xs text-gray-500">+{card.attendees}</span>
+          </div>
+          <span className="text-purple-600 font-bold text-sm">{card.price}</span>
+        </div>
       </div>
       <button className="w-full py-2 mt-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all">
         Register
@@ -648,16 +654,18 @@ const EventCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
 )
 
 const AdvertCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base bg-gradient-to-br from-yellow-400 to-orange-500 rounded-[24px] overflow-hidden shadow-xl cursor-pointer" onClick={onClick}>
-    <div className="relative h-32">
+  <div className="card-base h-full flex flex-col bg-gradient-to-br from-yellow-400 to-orange-500 rounded-[24px] overflow-hidden shadow-xl cursor-pointer" onClick={onClick}>
+    <div className="relative h-32 flex-shrink-0">
       <img src={card.image} alt={card.title} className="w-full h-full object-cover opacity-80" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
       <div className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-lg countdown-pulse">FLASH SALE</div>
       <div className="absolute bottom-3 right-3 bg-white text-black text-xs font-black px-2 py-1 rounded-lg countdown-pulse">{card.countdown}</div>
     </div>
-    <div className="p-4 text-white">
-      <h4 className="font-bold text-lg mb-1">{card.title}</h4>
-      <p className="text-white/80 text-sm mb-3">{card.subtitle}</p>
+    <div className="p-4 text-white flex-1 flex flex-col justify-between">
+      <div>
+        <h4 className="font-bold text-lg mb-1">{card.title}</h4>
+        <p className="text-white/80 text-sm mb-3">{card.subtitle}</p>
+      </div>
       <button className="w-full py-2.5 bg-white text-orange-600 rounded-xl text-sm font-black hover:bg-gray-100 transition-all">
         Shop Now
       </button>
@@ -666,12 +674,12 @@ const AdvertCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
 )
 
 const StorefrontCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-sm cursor-pointer" onClick={onClick}>
-    <div className="relative h-24">
+  <div className="card-base h-full flex flex-col bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-sm cursor-pointer" onClick={onClick}>
+    <div className="relative h-24 flex-shrink-0">
       <img src={card.image} alt={card.title} className="w-full h-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
     </div>
-    <div className="relative p-4">
+    <div className="relative p-4 flex-1">
       <div className="absolute -top-6 left-4">
         <img src={card.image} alt={card.title || 'Store'} className="w-12 h-12 rounded-xl border-4 border-white object-cover shadow-lg" />
       </div>
@@ -688,7 +696,7 @@ const StorefrontCard = ({ card, onClick }: { card: Card; onClick: () => void }) 
 )
 
 const OrderCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base p-4 bg-white rounded-xl border border-gray-100 shadow-sm cursor-pointer hover:border-emerald-300 transition-all" onClick={onClick}>
+  <div className="card-base h-full p-4 bg-white rounded-xl border border-gray-100 shadow-sm cursor-pointer hover:border-emerald-300 transition-all flex flex-col justify-between" onClick={onClick}>
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
@@ -725,7 +733,7 @@ const OrderCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
 )
 
 const DraftCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base p-4 bg-gray-50 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-100 transition-all" onClick={onClick}>
+  <div className="card-base h-full p-4 bg-gray-50 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-100 transition-all flex flex-col justify-between" onClick={onClick}>
     <div className="flex items-center gap-3">
       <div className="w-10 h-10 bg-gray-200 rounded-xl flex items-center justify-center">
         <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -742,7 +750,7 @@ const DraftCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
 )
 
 const ReportCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base p-4 bg-white rounded-xl border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all" onClick={onClick}>
+  <div className="card-base h-full p-4 bg-white rounded-xl border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all flex flex-col justify-between" onClick={onClick}>
     <div className="flex items-center gap-3">
       <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
         <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1214,10 +1222,17 @@ export default function Home() {
     }
   }
 
+  // Prepare columns and wide/banner cards for flexible layout
+  const sectionCards = getSectionCards()
+  const wideCards = sectionCards.filter(c => c.type === 'advert')
+  const normalCards = sectionCards.filter(c => c.type !== 'advert')
+  const columns: Card[][] = [[], [], []]
+  normalCards.forEach((card, i) => columns[i % 3].push(card))
+
   return (
     <TooltipProvider>
       <div className="flex items-center justify-center min-h-screen bg-[#DADBD3] p-0 lg:p-4">
-        <div className="flex w-full h-screen lg:h-[calc(100vh-2rem)] lg:rounded-2xl shadow-2xl bg-white overflow-hidden relative border border-gray-200">
+          <div className="flex w-full min-h-screen lg:h-[calc(100vh-2rem)] lg:rounded-2xl shadow-2xl bg-white overflow-auto relative border border-gray-200">
           
           {/* Global OS Rail */}
           <aside className="w-[75px] bg-[#111b21] flex flex-col items-center py-5 gap-6 shrink-0 z-50">
@@ -1314,7 +1329,7 @@ export default function Home() {
           </div>
 
           {/* Main Content Area */}
-          <main className="flex-1 flex flex-col relative overflow-hidden">
+          <main className="flex-1 flex flex-col relative overflow-auto">
             
             {/* Canvas View */}
             {currentView === 'canvas' && (
@@ -1348,19 +1363,33 @@ export default function Home() {
                   </div>
                 </header>
 
-                <ScrollArea className="flex-1 p-6 canvas-bg">
-                  <div className={`grid gap-5 ${
-                    dashboardSection === 'orders' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' :
-                    dashboardSection === 'drafts' ? 'grid-cols-1 sm:grid-cols-2' :
-                    'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                  } content-start`}>
-                    {getSectionCards().map((card) => (
-                      <div key={card.id} draggable onDragStart={() => setDraggedCard(card.id)} onDragOver={(e) => e.preventDefault()} onDrop={() => setDraggedCard(null)} className="transform transition-transform">
-                        {renderCard(card)}
-                      </div>
+                <div className="flex-1 p-6 canvas-bg flex flex-col min-h-0">
+                  {/* Wide / banner cards (e.g. adverts) rendered full-width above the columns */}
+                  {wideCards.length > 0 && (
+                    <div className="mb-5 space-y-5">
+                      {wideCards.map((card) => (
+                        <div key={card.id} className="transform transition-transform">
+                          {renderCard(card)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Three independent scrollable columns */}
+                  <div className="flex gap-5 flex-1 min-h-0">
+                    {columns.map((col, colIdx) => (
+                      <ScrollArea key={colIdx} className="flex-1 min-h-0 p-0">
+                        <div className="space-y-5 p-0">
+                          {col.map((card) => (
+                            <div key={card.id} draggable onDragStart={() => setDraggedCard(card.id)} onDragOver={(e) => e.preventDefault()} onDrop={() => setDraggedCard(null)} className="transform transition-transform h-full">
+                              {renderCard(card)}
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
                     ))}
                   </div>
-                </ScrollArea>
+                </div>
               </>
             )}
 
