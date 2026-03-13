@@ -16,7 +16,7 @@ case "$1" in
     ensure_deps
     echo "Running in dev mode: starting next dev"
     # Run next directly to ensure the port comes from the env (avoid stale package.json values)
-    exec sh -c "npx next dev -p ${PORT:-9003} 2>&1 | tee dev.log"
+    exec sh -c "npx next dev --webpack -p ${PORT:-9003} 2>&1 | tee dev.log"
     ;;
   pm2|prod)
     ensure_deps

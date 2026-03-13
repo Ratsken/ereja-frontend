@@ -3,11 +3,11 @@
   "version": "0.2.0",
   "private": true,
   "engines": {
-    "node": "22.5.1"
+    "node": "24.14.0"
   },
   "scripts": {
-    "dev": "next dev -p 9003 2>&1 | tee dev.log",
-    "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
+    "dev": "next dev --webpack -p 9003",
+    "build": "next build --webpack && node -e \"const fs=require('fs');const path=require('path');const base=path.join('.next','standalone');fs.mkdirSync(path.join(base,'.next'),{recursive:true});fs.existsSync(path.join('.next','static'))&&fs.cpSync(path.join('.next','static'),path.join(base,'.next','static'),{recursive:true});fs.existsSync('public')&&fs.cpSync('public',path.join(base,'public'),{recursive:true});\"",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
     "lint": "eslint .",
     "db:push": "prisma db push",
@@ -60,7 +60,7 @@
     "framer-motion": "^12.23.2",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.525.0",
-    "next": "^16.1.1",
+    "next": "^16.1.6",
     "next-auth": "^4.24.11",
     "next-intl": "^4.3.4",
     "next-themes": "^0.4.6",

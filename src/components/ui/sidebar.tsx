@@ -500,16 +500,19 @@ function SidebarMenuButton({
   isActive = false,
   variant = "default",
   size = "default",
+  closeOnSelect = true,
   tooltip,
   className,
+  onClick,
   ...props
 }: React.ComponentProps<"button"> & {
   asChild?: boolean
   isActive?: boolean
+  closeOnSelect?: boolean
   tooltip?: string | React.ComponentProps<typeof TooltipContent>
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
   const Comp = asChild ? Slot : "button"
-  const { isMobile, state } = useSidebar()
+  const { isMobile, state, setOpenMobile } = useSidebar()
 
   const button = (
     <Comp
@@ -518,6 +521,13 @@ function SidebarMenuButton({
       data-size={size}
       data-active={isActive}
       className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+      onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+        onClick?.(event)
+        // Close the sheet on mobile so the clicked content can show.
+        if (closeOnSelect && isMobile) {
+          setOpenMobile(false)
+        }
+      }}
       {...props}
     />
   )

@@ -14,6 +14,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { toast } from '@/hooks/use-toast'
 import * as Separator from '@radix-ui/react-separator'
+import { Paperclip, Camera, UploadCloud, MapPin } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 
 // Types
 type ViewType = 'canvas' | 'social' | 'messages' | 'dashboard' | 'reviews'
@@ -417,7 +420,7 @@ const MiniChart = ({ data, color }: { data: number[]; color: string }) => {
 
 // Card Components with various styles
 const StatCard = ({ card, compact = false }: { card: Card; compact?: boolean }) => (
-  <div className={`card-base h-full flex flex-col justify-between p-6 bg-[#111b21] rounded-[24px] text-white shadow-2xl ${compact ? 'p-4 rounded-xl' : ''}`}>
+  <div className={`card-base p-6 bg-[#111b21] rounded-[24px] text-white shadow-xl ${compact ? 'p-4 rounded-xl' : ''}`}>
     <div className="flex justify-between items-start mb-4">
       <span className="text-[10px] font-black text-emerald-400 tracking-widest uppercase">{card.title}</span>
       <button className="text-gray-500 hover:text-white transition-colors">
@@ -426,7 +429,7 @@ const StatCard = ({ card, compact = false }: { card: Card; compact?: boolean }) 
         </svg>
       </button>
     </div>
-    <div className="flex items-end gap-3 flex-1">
+    <div className="flex items-end gap-3">
       <h4 className={`${compact ? 'text-2xl' : 'text-4xl'} font-extrabold`}>{card.value}</h4>
       <span className="text-emerald-400 text-sm font-bold mb-1">{card.trend}</span>
     </div>
@@ -446,8 +449,8 @@ const ProductCard = ({ card, onClick, style = 'default' }: { card: Card; onClick
   }
 
   return (
-    <div className={`${baseClasses} ${styleClasses[style]} h-full flex flex-col shadow-xl`} onClick={onClick}>
-      <div className="relative flex-shrink-0">
+    <div className={`${baseClasses} ${styleClasses[style]}`} onClick={onClick}>
+      <div className="relative">
         <img src={card.image} alt={card.title} className={`${style === 'compact' ? 'h-32' : 'h-44'} w-full object-cover`} />
         {card.originalPrice && (
           <span className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-lg">SALE</span>
@@ -461,7 +464,7 @@ const ProductCard = ({ card, onClick, style = 'default' }: { card: Card; onClick
           </span>
         )}
       </div>
-      <div className={`${style === 'compact' ? 'p-3' : 'p-4'} flex-1 flex flex-col justify-between`}>
+      <div className={`${style === 'compact' ? 'p-3' : 'p-4'}`}>
         <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1 block">{card.category}</span>
         <h4 className="font-bold text-gray-800 mb-1 line-clamp-2 text-sm">{card.title}</h4>
         <div className="flex items-center gap-2 mb-2">
@@ -485,8 +488,8 @@ const ProductCard = ({ card, onClick, style = 'default' }: { card: Card; onClick
 }
 
 const AuctionCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base h-full flex flex-col bg-white rounded-[24px] overflow-hidden border-2 border-orange-400 shadow-xl cursor-pointer" onClick={onClick}>
-    <div className="relative flex-shrink-0">
+  <div className="card-base bg-white rounded-[24px] overflow-hidden border-2 border-orange-400 shadow-lg cursor-pointer" onClick={onClick}>
+    <div className="relative">
       <img src={card.image} alt={card.title} className="h-40 w-full object-cover" />
       <div className="absolute top-3 left-3 bg-orange-500 text-white text-[10px] font-black px-3 py-1.5 rounded-lg flex items-center gap-1 countdown-pulse">
         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -498,7 +501,7 @@ const AuctionCard = ({ card, onClick }: { card: Card; onClick: () => void }) => 
         <span className="text-white/80 text-xs font-medium">{card.bids} bids</span>
       </div>
     </div>
-    <div className="p-4 flex-1 flex flex-col justify-between">
+    <div className="p-4">
       <span className="text-[10px] text-orange-500 font-bold uppercase tracking-wider mb-1 block">Live Auction</span>
       <h4 className="font-bold text-gray-800 mb-2 line-clamp-1">{card.title}</h4>
       <div className="flex justify-between items-end">
@@ -515,7 +518,7 @@ const AuctionCard = ({ card, onClick }: { card: Card; onClick: () => void }) => 
 )
 
 const VendorCard = ({ card, onClick, compact = false }: { card: Card; onClick: () => void; compact?: boolean }) => (
-  <div className={`card-base h-full flex flex-col bg-white ${compact ? 'rounded-xl p-4' : 'rounded-[24px] p-5'} border-2 border-emerald-500 shadow-xl cursor-pointer`} onClick={onClick}>
+  <div className={`card-base bg-white ${compact ? 'rounded-xl p-4' : 'rounded-[24px] p-5'} border-2 border-emerald-500 shadow-xl cursor-pointer`} onClick={onClick}>
     <div className="flex items-center gap-3 mb-3">
       <img src={card.image} alt={card.title} className={`${compact ? 'w-10 h-10' : 'w-12 h-12'} rounded-full border-2 border-emerald-500 object-cover`} />
       <div>
@@ -527,16 +530,14 @@ const VendorCard = ({ card, onClick, compact = false }: { card: Card; onClick: (
       <StarRating rating={card.rating || 0} />
       <span className="text-xs text-gray-500 font-medium">({card.reviews})</span>
     </div>
-    <div className="flex-1">
-      {!compact && card.description && <p className="text-sm text-gray-600 mb-3 line-clamp-2">{card.description}</p>}
-      {!compact && card.tags && (
-        <div className="flex flex-wrap gap-1 mb-3">
-          {card.tags.slice(0, 3).map((tag, i) => (
-            <span key={i} className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-lg">{tag}</span>
-          ))}
-        </div>
-      )}
-    </div>
+    {!compact && card.description && <p className="text-sm text-gray-600 mb-3 line-clamp-2">{card.description}</p>}
+    {!compact && card.tags && (
+      <div className="flex flex-wrap gap-1 mb-3">
+        {card.tags.slice(0, 3).map((tag, i) => (
+          <span key={i} className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-lg">{tag}</span>
+        ))}
+      </div>
+    )}
     <button className="w-full py-2 border-2 border-[#111b21] text-[#111b21] rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#111b21] hover:text-white transition-all">
       Visit Store
     </button>
@@ -544,24 +545,22 @@ const VendorCard = ({ card, onClick, compact = false }: { card: Card; onClick: (
 )
 
 const ServiceCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base h-full flex flex-col bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-sm cursor-pointer" onClick={onClick}>
-    <div className="relative h-32 flex-shrink-0">
+  <div className="card-base bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-sm cursor-pointer" onClick={onClick}>
+    <div className="relative h-32">
       <img src={card.image} alt={card.title} className="w-full h-full object-cover" />
       <div className="absolute top-3 left-3 bg-purple-500 text-white text-[10px] font-black px-3 py-1 rounded-lg">SERVICE</div>
     </div>
-    <div className="p-4 flex-1 flex flex-col justify-between">
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <img src={card.vendor?.avatar} alt={card.vendor?.name || 'Vendor'} className="w-5 h-5 rounded-full" />
-          <span className="text-xs font-medium text-gray-700">{card.vendor?.name}</span>
-        </div>
-        <h4 className="font-bold text-gray-800 text-sm mb-1">{card.title}</h4>
-        <div className="flex items-center gap-1 text-gray-500 text-xs mb-2">
-          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-          </svg>
-          {card.location}
-        </div>
+    <div className="p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <img src={card.vendor?.avatar} alt={card.vendor?.name || 'Vendor'} className="w-5 h-5 rounded-full" />
+        <span className="text-xs font-medium text-gray-700">{card.vendor?.name}</span>
+      </div>
+      <h4 className="font-bold text-gray-800 text-sm mb-1">{card.title}</h4>
+      <div className="flex items-center gap-1 text-gray-500 text-xs mb-2">
+        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+        </svg>
+        {card.location}
       </div>
       <div className="flex items-center justify-between">
         <div>
@@ -575,7 +574,7 @@ const ServiceCard = ({ card, onClick }: { card: Card; onClick: () => void }) => 
 )
 
 const LogisticsCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base h-full p-5 bg-white rounded-[24px] border border-gray-200 shadow-sm cursor-pointer flex flex-col justify-between" onClick={onClick}>
+  <div className="card-base p-5 bg-white rounded-[24px] border border-gray-200 shadow-sm cursor-pointer" onClick={onClick}>
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
@@ -609,8 +608,8 @@ const LogisticsCard = ({ card, onClick }: { card: Card; onClick: () => void }) =
 )
 
 const EventCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base h-full flex flex-col bg-white rounded-[24px] overflow-hidden shadow-lg cursor-pointer" onClick={onClick}>
-    <div className="relative h-32 event-gradient flex-shrink-0">
+  <div className="card-base bg-white rounded-[24px] overflow-hidden shadow-lg cursor-pointer" onClick={onClick}>
+    <div className="relative h-32 event-gradient">
       <img src={card.image} alt={card.title} className="w-full h-full object-cover opacity-50" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
       <div className="absolute bottom-3 left-3 right-3">
@@ -618,33 +617,31 @@ const EventCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
         <h4 className="text-white font-bold">{card.title}</h4>
       </div>
     </div>
-    <div className="p-4 flex-1 flex flex-col justify-between">
-      <div>
-        <div className="flex items-center gap-3 text-xs text-gray-600 mb-3">
-          <div className="flex items-center gap-1">
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span>{card.date}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            </svg>
-            <span className="truncate">{card.location}</span>
-          </div>
+    <div className="p-4">
+      <div className="flex items-center gap-3 text-xs text-gray-600 mb-3">
+        <div className="flex items-center gap-1">
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span>{card.date}</span>
         </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex -space-x-2">
-              {[1, 2, 3].map((i) => (
-                <img key={i} src={`https://i.pravatar.cc/30?u=e${i}`} alt="Attendee" className="w-5 h-5 rounded-full border-2 border-white" />
-              ))}
-            </div>
-            <span className="text-xs text-gray-500">+{card.attendees}</span>
-          </div>
-          <span className="text-purple-600 font-bold text-sm">{card.price}</span>
+        <div className="flex items-center gap-1">
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          </svg>
+          <span className="truncate">{card.location}</span>
         </div>
+      </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex -space-x-2">
+            {[1, 2, 3].map((i) => (
+              <img key={i} src={`https://i.pravatar.cc/30?u=e${i}`} alt="Attendee" className="w-5 h-5 rounded-full border-2 border-white" />
+            ))}
+          </div>
+          <span className="text-xs text-gray-500">+{card.attendees}</span>
+        </div>
+        <span className="text-purple-600 font-bold text-sm">{card.price}</span>
       </div>
       <button className="w-full py-2 mt-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all">
         Register
@@ -654,18 +651,16 @@ const EventCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
 )
 
 const AdvertCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base h-full flex flex-col bg-gradient-to-br from-yellow-400 to-orange-500 rounded-[24px] overflow-hidden shadow-xl cursor-pointer" onClick={onClick}>
-    <div className="relative h-32 flex-shrink-0">
+  <div className="card-base bg-gradient-to-br from-yellow-400 to-orange-500 rounded-[24px] overflow-hidden shadow-xl cursor-pointer" onClick={onClick}>
+    <div className="relative h-32">
       <img src={card.image} alt={card.title} className="w-full h-full object-cover opacity-80" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
       <div className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-lg countdown-pulse">FLASH SALE</div>
       <div className="absolute bottom-3 right-3 bg-white text-black text-xs font-black px-2 py-1 rounded-lg countdown-pulse">{card.countdown}</div>
     </div>
-    <div className="p-4 text-white flex-1 flex flex-col justify-between">
-      <div>
-        <h4 className="font-bold text-lg mb-1">{card.title}</h4>
-        <p className="text-white/80 text-sm mb-3">{card.subtitle}</p>
-      </div>
+    <div className="p-4 text-white">
+      <h4 className="font-bold text-lg mb-1">{card.title}</h4>
+      <p className="text-white/80 text-sm mb-3">{card.subtitle}</p>
       <button className="w-full py-2.5 bg-white text-orange-600 rounded-xl text-sm font-black hover:bg-gray-100 transition-all">
         Shop Now
       </button>
@@ -674,12 +669,12 @@ const AdvertCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
 )
 
 const StorefrontCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base h-full flex flex-col bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-sm cursor-pointer" onClick={onClick}>
-    <div className="relative h-24 flex-shrink-0">
+  <div className="card-base bg-white rounded-[24px] overflow-hidden border border-gray-100 shadow-sm cursor-pointer" onClick={onClick}>
+    <div className="relative h-24">
       <img src={card.image} alt={card.title} className="w-full h-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
     </div>
-    <div className="relative p-4 flex-1">
+    <div className="relative p-4">
       <div className="absolute -top-6 left-4">
         <img src={card.image} alt={card.title || 'Store'} className="w-12 h-12 rounded-xl border-4 border-white object-cover shadow-lg" />
       </div>
@@ -696,7 +691,7 @@ const StorefrontCard = ({ card, onClick }: { card: Card; onClick: () => void }) 
 )
 
 const OrderCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base h-full p-4 bg-white rounded-xl border border-gray-100 shadow-sm cursor-pointer hover:border-emerald-300 transition-all flex flex-col justify-between" onClick={onClick}>
+  <div className="card-base p-4 bg-white rounded-xl border border-gray-100 shadow-sm cursor-pointer hover:border-emerald-300 transition-all" onClick={onClick}>
     <div className="flex items-center justify-between mb-3">
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
@@ -733,7 +728,7 @@ const OrderCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
 )
 
 const DraftCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base h-full p-4 bg-gray-50 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-100 transition-all flex flex-col justify-between" onClick={onClick}>
+  <div className="card-base p-4 bg-gray-50 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-100 transition-all" onClick={onClick}>
     <div className="flex items-center gap-3">
       <div className="w-10 h-10 bg-gray-200 rounded-xl flex items-center justify-center">
         <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -750,7 +745,7 @@ const DraftCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
 )
 
 const ReportCard = ({ card, onClick }: { card: Card; onClick: () => void }) => (
-  <div className="card-base h-full p-4 bg-white rounded-xl border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all flex flex-col justify-between" onClick={onClick}>
+  <div className="card-base p-4 bg-white rounded-xl border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all" onClick={onClick}>
     <div className="flex items-center gap-3">
       <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
         <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -826,9 +821,10 @@ const ChatMessage = ({ message, isOwn }: { message: Message; isOwn: boolean }) =
 )
 
 // Post Component
-const PostCard = ({ post }: { post: Post }) => {
+const PostCard = ({ post, onComment, isActive }: { post: Post; onComment: (post: Post) => void; isActive: boolean }) => {
   const [liked, setLiked] = useState(post.liked)
   const [likes, setLikes] = useState(post.likes)
+  const [saved, setSaved] = useState(false)
 
   const handleLike = () => {
     setLikes(liked ? likes - 1 : likes + 1)
@@ -836,7 +832,7 @@ const PostCard = ({ post }: { post: Post }) => {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${isActive ? 'border-emerald-500 shadow-lg ring-2 ring-emerald-100' : 'border-gray-200'}`}>
       <div className="p-4">
         <div className="flex items-center gap-3 mb-3">
           <Avatar><AvatarImage src={post.user.avatar} /><AvatarFallback>{post.user.name[0]}</AvatarFallback></Avatar>
@@ -857,14 +853,16 @@ const PostCard = ({ post }: { post: Post }) => {
             </svg>
             <span>{likes}</span>
           </button>
-          <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-500 transition-colors">
+          <button onClick={() => onComment(post)} className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-500 transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
             <span>{post.comments}</span>
           </button>
-          <button className="flex items-center gap-2 text-sm text-gray-500 hover:text-emerald-500 transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
-            <span>{post.shares}</span>
-          </button>
+          <div className="flex items-center gap-3 text-gray-500">
+            <button onClick={() => setSaved((s) => !s)} className={`flex items-center gap-2 text-sm ${saved ? 'text-emerald-600' : 'text-gray-500'} hover:text-emerald-500 transition-colors`}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+              <span>{saved ? 'Saved' : 'Save'}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -973,6 +971,7 @@ export default function Home() {
   const [chats] = useState<Chat[]>(MOCK_CHATS)
   const [activeChat, setActiveChat] = useState<Chat | null>(null)
   const [posts] = useState<Post[]>(MOCK_POSTS)
+  
   const [reviews] = useState<Review[]>(MOCK_REVIEWS)
   const [aiInput, setAiInput] = useState('')
   const [chatInput, setChatInput] = useState('')
@@ -983,7 +982,13 @@ export default function Home() {
   const [viewTitle, setViewTitle] = useState('Workspace')
   const [aiExpanded, setAiExpanded] = useState(false)
   const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
+  const [aiAttachments, setAiAttachments] = useState<File[]>([])
+  const [isAiDragging, setIsAiDragging] = useState(false)
   const [draggedCard, setDraggedCard] = useState<string | null>(null)
+  const [primaryNavCollapsed, setPrimaryNavCollapsed] = useState(false)
+  const [activePostComments, setActivePostComments] = useState<Post | null>(null)
+  const [commentInput, setCommentInput] = useState('')
+  const [activeReplyIndex, setActiveReplyIndex] = useState<number | null>(null)
 
   // Modals
   const [showLoginModal, setShowLoginModal] = useState(false)
@@ -991,6 +996,7 @@ export default function Home() {
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [showCreatePostModal, setShowCreatePostModal] = useState(false)
   const [showNearbyVendors, setShowNearbyVendors] = useState(false)
+  const [showMobileSubSidebar, setShowMobileSubSidebar] = useState(false)
 
   // Auth state
   const [isLoggedIn, setIsLoggedIn] = useState(true)
@@ -1001,8 +1007,35 @@ export default function Home() {
   const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '', confirmPassword: '', role: 'user' as 'user' | 'vendor' })
   const [newPost, setNewPost] = useState({ content: '', image: '' })
 
+  // Create post attachments & location
+  const [createPostAttachments, setCreatePostAttachments] = useState<File[]>([])
+  const [createPostLocation, setCreatePostLocation] = useState<string>('')
+  const createFileInputRef = useRef<HTMLInputElement>(null)
+
   const chatEndRef = useRef<HTMLDivElement>(null)
   const sidebarRef = useRef<HTMLDivElement>(null)
+  const aiTextAreaRef = useRef<HTMLTextAreaElement>(null)
+  const aiFileInputRef = useRef<HTMLInputElement>(null)
+  const aiCameraInputRef = useRef<HTMLInputElement>(null)
+  const isMobile = useIsMobile()
+
+  // Infinite scroll for posts & comments
+  const [postsPage, setPostsPage] = useState(1)
+  const postsPageSize = 5
+  const feedEndRef = useRef<HTMLDivElement | null>(null)
+
+  const ALL_COMMENTS = useMemo(() => Array.from({ length: 40 }).map((_, i) => ({
+    id: `c${i + 1}`,
+    user: MOCK_USERS[i % MOCK_USERS.length],
+    content: `Sample comment #${i + 1}`,
+    timestamp: `${i + 1}h ago`
+  })), [])
+  const [commentsPage, setCommentsPage] = useState(1)
+  const commentsPageSize = 6
+  const commentsEndRef = useRef<HTMLDivElement | null>(null)
+
+  const visiblePosts = posts.slice(0, postsPage * postsPageSize)
+  const visibleComments = ALL_COMMENTS.slice(0, commentsPage * commentsPageSize)
 
   // Sidebar items based on view
   const getSidebarItems = useCallback((view: ViewType): SidebarItem[] => {
@@ -1042,6 +1075,13 @@ export default function Home() {
     }
   }, [chats, reviews])
 
+  const getViewNotificationCount = (view: ViewType) => {
+    if (view === 'messages') return chats.reduce((acc, c) => acc + (c.unread || 0), 0)
+    if (view === 'reviews') return reviews.filter(r => !r.reply).length
+    if (view === 'social') return posts.length > 0 ? 1 : 0
+    return 0
+  }
+
   // Initialize sidebar items with useMemo
   const sidebarItemsMemo = useMemo(() => getSidebarItems(currentView), [currentView, getSidebarItems])
 
@@ -1072,12 +1112,29 @@ export default function Home() {
     }
   }, [isResizing, handleMouseMove, handleMouseUp])
 
+  const handleAiInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setAiInput(e.target.value)
+    if (aiTextAreaRef.current) {
+      aiTextAreaRef.current.style.height = 'auto'
+      aiTextAreaRef.current.style.height = `${Math.min(aiTextAreaRef.current.scrollHeight, 320)}px`
+    }
+  }
+
+  const handleAiFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    setAiAttachments(prev => [...prev, ...Array.from(files)])
+  }
+
   // View switching
   const handleViewSwitch = (view: ViewType) => {
     setCurrentView(view)
     setActiveChat(null)
     setShowNearbyVendors(false)
     setDashboardSection('overview')
+    if (isMobile) setShowMobileSubSidebar(true)
+    if (isMobile && view === 'messages') {
+      setAiExpanded(false) // will be opened explicitly by user
+    }
     
     // Set default sidebar item for the view
     const viewItems = getSidebarItems(view)
@@ -1103,6 +1160,7 @@ export default function Home() {
     } else if (currentView === 'canvas') {
       setDashboardSection(itemId as DashboardSection)
     }
+    if (isMobile) setShowMobileSubSidebar(false)
   }
 
   // Send message
@@ -1117,9 +1175,11 @@ export default function Home() {
 
   // AI Chat
   const handleAIRequest = () => {
-    if (!aiInput.trim()) return
-    const userMsg = { role: 'user' as const, content: aiInput }
+    if (!aiInput.trim() && aiAttachments.length === 0) return
+    const attachmentNote = aiAttachments.length ? ` [${aiAttachments.length} attachment${aiAttachments.length > 1 ? 's' : ''}]` : ''
+    const userMsg = { role: 'user' as const, content: aiInput + attachmentNote }
     setAiMessages(prev => [...prev, userMsg])
+    setAiAttachments([])
     
     setTimeout(() => {
       const responses = [
@@ -1133,6 +1193,7 @@ export default function Home() {
     }, 1000)
     
     setAiInput('')
+    if (aiTextAreaRef.current) aiTextAreaRef.current.style.height = 'auto'
     if (!aiExpanded) setAiExpanded(true)
   }
 
@@ -1170,8 +1231,70 @@ export default function Home() {
     }
     setShowCreatePostModal(false)
     setNewPost({ content: '', image: '' })
+    setCreatePostAttachments([])
+    setCreatePostLocation('')
     toast({ title: 'Post Created!', description: 'Your post has been published.' })
   }
+
+  const handleCreateFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    const arr = Array.from(files)
+    setCreatePostAttachments((prev) => [...prev, ...arr])
+    // preview first image if none set
+    const first = arr[0]
+    if (first && first.type.startsWith('image/')) {
+      const url = URL.createObjectURL(first)
+      setNewPost((p) => ({ ...p, image: url }))
+    }
+  }
+
+  const handlePickLocation = () => {
+    if (!navigator.geolocation) {
+      toast({ title: 'Location Unavailable', description: 'Geolocation is not supported by your browser.', variant: 'destructive' })
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`
+        setCreatePostLocation(coords)
+        toast({ title: 'Location set', description: coords })
+      },
+      (err) => {
+        toast({ title: 'Location Error', description: err.message, variant: 'destructive' })
+      }
+    )
+  }
+
+  // Infinite scroll observers
+  useEffect(() => {
+    if (!feedEndRef.current) return
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setPostsPage((p) => {
+            const maxPages = Math.ceil(posts.length / postsPageSize)
+            return p < maxPages ? p + 1 : p
+          })
+        }
+      })
+    }, { root: null, rootMargin: '400px' })
+    obs.observe(feedEndRef.current)
+    return () => obs.disconnect()
+  }, [feedEndRef])
+
+  useEffect(() => {
+    if (!commentsEndRef.current) return
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) setCommentsPage((p) => {
+          const maxPages = Math.ceil(ALL_COMMENTS.length / commentsPageSize)
+          return p < maxPages ? p + 1 : p
+        })
+      })
+    }, { root: null, rootMargin: '200px' })
+    obs.observe(commentsEndRef.current)
+    return () => obs.disconnect()
+  }, [commentsEndRef])
 
   // Place Bid
   const handlePlaceBid = () => {
@@ -1222,25 +1345,28 @@ export default function Home() {
     }
   }
 
-  // Prepare columns and wide/banner cards for flexible layout
-  const sectionCards = getSectionCards()
-  const wideCards = sectionCards.filter(c => c.type === 'advert')
-  const normalCards = sectionCards.filter(c => c.type !== 'advert')
-  const columns: Card[][] = [[], [], []]
-  normalCards.forEach((card, i) => columns[i % 3].push(card))
-
   return (
     <TooltipProvider>
       <div className="flex items-center justify-center min-h-screen bg-[#DADBD3] p-0 lg:p-4">
-          <div className="flex w-full min-h-screen lg:h-[calc(100vh-2rem)] lg:rounded-2xl shadow-2xl bg-white overflow-auto relative border border-gray-200">
+        <div className="flex w-full h-screen lg:h-[calc(100vh-2rem)] lg:rounded-2xl shadow-2xl bg-white overflow-hidden relative border border-gray-200">
           
           {/* Global OS Rail */}
-          <aside className="w-[75px] bg-[#111b21] flex flex-col items-center py-5 gap-6 shrink-0 z-50">
+          <aside className={`bg-[#111b21] flex flex-col items-center py-5 gap-6 shrink-0 z-50 transition-all duration-400 relative ${primaryNavCollapsed ? 'w-0 opacity-0 pointer-events-none' : 'w-[75px]'}`}>
             <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg cursor-pointer hover:scale-110 transition-transform">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
                 <path d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
+            <button
+              className="absolute top-3 right-2 text-gray-400 hover:text-white transition-colors"
+              onClick={() => setTimeout(() => setPrimaryNavCollapsed((prev) => !prev), 140)}
+            >
+              {primaryNavCollapsed ? (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M5 12h14m-7-7 7 7-7 7" /></svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M19 12H5m7-7-7 7 7 7" /></svg>
+              )}
+            </button>
 
             <nav className="flex flex-col gap-5 text-gray-400">
               {[
@@ -1249,16 +1375,22 @@ export default function Home() {
                 { view: 'messages' as ViewType, icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>, label: 'Messaging' },
                 { view: 'reviews' as ViewType, icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>, label: 'Reviews' },
                 { view: 'dashboard' as ViewType, icon: <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>, label: 'Analytics' },
-              ].map(({ view, icon, label }) => (
-                <Tooltip key={view}>
-                  <TooltipTrigger asChild>
-                    <button onClick={() => handleViewSwitch(view)} className={`hover:text-white transition-colors p-1.5 ${currentView === view ? 'text-emerald-400' : ''}`}>
-                      {icon}
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">{label}</TooltipContent>
-                </Tooltip>
-              ))}
+              ].map(({ view, icon, label }) => {
+                const badge = getViewNotificationCount(view)
+                return (
+                  <Tooltip key={view}>
+                    <TooltipTrigger asChild>
+                      <button onClick={() => handleViewSwitch(view)} className={`relative hover:text-white transition-colors p-1.5 ${currentView === view ? 'text-emerald-400' : ''}`}>
+                        {icon}
+                        {badge > 0 && (
+                          <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-[#111b21]" />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">{label}</TooltipContent>
+                  </Tooltip>
+                )
+              })}
             </nav>
 
             <div className="mt-auto flex flex-col gap-5">
@@ -1287,9 +1419,38 @@ export default function Home() {
               </Tooltip>
             </div>
           </aside>
+          {primaryNavCollapsed && (
+            <button
+              className="absolute left-2 top-3 z-50 bg-[#111b21] text-white rounded-full p-2 shadow-lg hover:scale-105 transition-transform"
+              onClick={() => setTimeout(() => setPrimaryNavCollapsed(false), 120)}
+              aria-label="Expand sidebar"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M5 12h14m-7-7 7 7-7 7" /></svg>
+            </button>
+          )}
 
-          {/* Resizable Sub-Sidebar */}
-          <div ref={sidebarRef} style={{ width: sidebarWidth }} className="border-r border-gray-200 bg-white flex flex-col z-40 relative min-w-[280px] max-w-[500px]">
+          {/* Mobile Sub-Sidebar (sheet) */}
+          <Sheet open={showMobileSubSidebar} onOpenChange={setShowMobileSubSidebar}>
+            <SheetContent side="left" className="p-0 w-[80vw] max-w-md">
+              <SheetHeader className="px-4 py-3 border-b">
+                <SheetTitle>{viewTitle}</SheetTitle>
+              </SheetHeader>
+              <div className="p-3">
+                <div className="bg-gray-100 flex items-center px-3 rounded-xl">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="bg-transparent w-full text-sm py-2.5 px-3 outline-none" />
+                </div>
+              </div>
+              <ScrollArea className="h-[calc(100vh-140px)] px-2 pb-4">
+                {filteredSidebarItems.map((item) => (
+                  <SidebarItemComponent key={item.id} item={item} active={activeSidebarItem === item.id} onClick={() => handleSidebarItemClick(item.id)} />
+                ))}
+              </ScrollArea>
+            </SheetContent>
+          </Sheet>
+
+          {/* Resizable Sub-Sidebar (desktop) */}
+          <div ref={sidebarRef} style={{ width: sidebarWidth }} className="border-r border-gray-200 bg-white flex-col z-40 relative min-w-[280px] max-w-[500px] hidden md:flex">
             <header className="h-[60px] px-5 flex items-center justify-between shrink-0 bg-[#f0f2f5]">
               <h2 className="font-bold text-lg text-gray-800">{viewTitle}</h2>
               <div className="flex gap-3 text-gray-500">
@@ -1329,7 +1490,7 @@ export default function Home() {
           </div>
 
           {/* Main Content Area */}
-          <main className="flex-1 flex flex-col relative overflow-auto">
+          <main className="flex-1 flex flex-col relative overflow-hidden">
             
             {/* Canvas View */}
             {currentView === 'canvas' && (
@@ -1363,33 +1524,19 @@ export default function Home() {
                   </div>
                 </header>
 
-                <div className="flex-1 p-6 canvas-bg flex flex-col min-h-0">
-                  {/* Wide / banner cards (e.g. adverts) rendered full-width above the columns */}
-                  {wideCards.length > 0 && (
-                    <div className="mb-5 space-y-5">
-                      {wideCards.map((card) => (
-                        <div key={card.id} className="transform transition-transform">
-                          {renderCard(card)}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Three independent scrollable columns */}
-                  <div className="flex gap-5 flex-1 min-h-0">
-                    {columns.map((col, colIdx) => (
-                      <ScrollArea key={colIdx} className="flex-1 min-h-0 p-0">
-                        <div className="space-y-5 p-0">
-                          {col.map((card) => (
-                            <div key={card.id} draggable onDragStart={() => setDraggedCard(card.id)} onDragOver={(e) => e.preventDefault()} onDrop={() => setDraggedCard(null)} className="transform transition-transform h-full">
-                              {renderCard(card)}
-                            </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
+                <ScrollArea className="flex-1 p-6 canvas-bg">
+                  <div className={`grid gap-5 ${
+                    dashboardSection === 'orders' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' :
+                    dashboardSection === 'drafts' ? 'grid-cols-1 sm:grid-cols-2' :
+                    'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                  } content-start`}>
+                    {getSectionCards().map((card) => (
+                      <div key={card.id} draggable onDragStart={() => setDraggedCard(card.id)} onDragOver={(e) => e.preventDefault()} onDrop={() => setDraggedCard(null)} className="transform transition-transform">
+                        {renderCard(card)}
+                      </div>
                     ))}
                   </div>
-                </div>
+                </ScrollArea>
               </>
             )}
 
@@ -1407,11 +1554,183 @@ export default function Home() {
                   </button>
                 </header>
 
-                <ScrollArea className="flex-1 p-6">
-                  <div className="max-w-2xl mx-auto space-y-5">
-                    {posts.map((post) => <PostCard key={post.id} post={post} />)}
+                <ScrollArea className="flex-1 p-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className={`mx-auto w-full ${activePostComments && !isMobile ? 'max-w-6xl' : 'max-w-4xl'}`}>
+                    {activePostComments && !isMobile ? (
+                      <div className="flex gap-2">
+                        <div className="flex-1 pr-1 space-y-2">
+                          {visiblePosts.map((post) => (
+                            <PostCard
+                              key={post.id}
+                              post={post}
+                              isActive={activePostComments?.id === post.id}
+                              onComment={(p) => setActivePostComments(p)}
+                            />
+                          ))}
+                          <div ref={feedEndRef} />
+                        </div>
+                        <div className="flex-1 pl-1">
+                          <div className="bg-white border border-emerald-200 rounded-2xl shadow-lg overflow-hidden flex flex-col h-full">
+                            <div className="flex items-center justify-between px-4 py-3 border-b">
+                              <div>
+                                <h4 className="font-semibold text-gray-800 text-sm">{activePostComments.user.name}</h4>
+                                <p className="text-xs text-gray-500 flex items-center gap-1"><MapPin className="w-3 h-3" /> Nairobi, KE · 2km away</p>
+                              </div>
+                              <button onClick={() => setActivePostComments(null)} className="text-gray-400 hover:text-gray-600">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                              </button>
+                            </div>
+                            <div className="h-24 bg-gradient-to-br from-emerald-50 to-blue-50 flex items-center justify-center text-[11px] text-gray-500">Map & location preview</div>
+                            <ScrollArea className="flex-1 px-4 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                              <div className="space-y-2">
+                                {visibleComments.map((comment, i) => (
+                                  <div key={comment.id} className="bg-gray-50 rounded-xl p-3">
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                      <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-700">{comment.user.name[0]}</div>
+                                      <div className="flex-1">
+                                        <p className="text-xs font-semibold text-gray-800">{comment.user.name}</p>
+                                        <span className="text-[10px] text-gray-400">{comment.timestamp}</span>
+                                      </div>
+                                      <div className="flex items-center gap-1 text-[11px] text-gray-500">
+                                        <button className="hover:text-emerald-600">👍</button>
+                                        <button className="hover:text-rose-500">👎</button>
+                                      </div>
+                                    </div>
+                                    <p className="text-sm text-gray-700">{comment.content}</p>
+                                    <div className="flex gap-2 mt-2 text-[11px] text-gray-500 items-center">
+                                      <button className="hover:text-emerald-600" onClick={() => setActiveReplyIndex(i)}>Reply</button>
+                                      <div className="flex gap-1">
+                                        {['😀','😍','🔥','🎉'].map((emo) => (
+                                          <button key={emo} className="hover:scale-110 transition-transform">{emo}</button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    {activeReplyIndex === i && (
+                                      <div className="mt-2 flex gap-2 items-start">
+                                        <div className="flex flex-col gap-2 flex-1">
+                                          <div className="flex items-center gap-2 text-gray-500">
+                                            <button className="hover:text-gray-700" title="Attach" onClick={() => createFileInputRef.current?.click()}>
+                                              <Paperclip className="w-4 h-4" />
+                                            </button>
+                                            <button className="hover:text-gray-700" title="Location" onClick={handlePickLocation}>
+                                              <MapPin className="w-4 h-4" />
+                                            </button>
+                                            <div className="flex gap-1">
+                                              {['😀','😍','🔥'].map((emo) => (
+                                                <button key={emo} className="hover:scale-110 transition-transform">{emo}</button>
+                                              ))}
+                                            </div>
+                                          </div>
+                                          <Textarea value={commentInput} onChange={(e) => setCommentInput(e.target.value)} placeholder="Reply..." className="flex-1 resize-none min-h-[70px]" />
+                                        </div>
+                                        <Button onClick={() => { setCommentInput(''); setActiveReplyIndex(null) }} className="bg-emerald-500 hover:bg-emerald-600 rounded-xl">Send</Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                                <div ref={commentsEndRef} />
+                              </div>
+                            </ScrollArea>
+                            <div className="border-t p-3">
+                              <div className="flex items-center gap-2 mb-2 text-xl">
+                                {['😀','😍','🔥','👌','👏'].map((emo) => (
+                                  <button key={emo} className="hover:scale-110 transition-transform">{emo}</button>
+                                ))}
+                              </div>
+                              <div className="flex items-center gap-2 mb-2 text-gray-500">
+                                <button className="hover:text-gray-700" title="Attach">
+                                  <Paperclip className="w-4 h-4" />
+                                </button>
+                                <button className="hover:text-gray-700" title="Location">
+                                  <MapPin className="w-4 h-4" />
+                                </button>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Textarea value={commentInput} onChange={(e) => setCommentInput(e.target.value)} placeholder="Add a comment..." className="flex-1 resize-none min-h-[60px]" />
+                                <Button onClick={() => setCommentInput('')} className="bg-emerald-500 hover:bg-emerald-600 rounded-xl">Send</Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {visiblePosts.map((post) => (
+                          <PostCard
+                            key={post.id}
+                            post={post}
+                            isActive={activePostComments?.id === post.id}
+                            onComment={(p) => setActivePostComments(p)}
+                          />
+                        ))}
+                        <div ref={feedEndRef} />
+                      </div>
+                    )}
                   </div>
                 </ScrollArea>
+
+                {/* Comments modal mobile */}
+                {activePostComments && isMobile && (
+                  <Dialog open={true} onOpenChange={() => setActivePostComments(null)}>
+                    <DialogContent className="w-[95vw] max-w-full p-4">
+                      <DialogHeader>
+                        <DialogTitle>Comments</DialogTitle>
+                        <DialogDescription>{activePostComments.user.name} · Nairobi, KE</DialogDescription>
+                      </DialogHeader>
+                      <ScrollArea className="h-64 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        <div className="space-y-3">
+                          {visibleComments.slice(0, 5).map((comment, i) => (
+                            <div key={comment.id} className="bg-gray-50 rounded-xl p-3">
+                              <div className="flex items-center gap-2 mb-1">
+                                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-700">{comment.user.name[0]}</div>
+                                <div className="flex-1">
+                                  <p className="text-xs font-semibold text-gray-800">{comment.user.name}</p>
+                                  <span className="text-[10px] text-gray-400">{comment.timestamp}</span>
+                                </div>
+                                <div className="flex gap-1 text-sm text-gray-500">
+                                  {['😀','😍','🔥'].map((emo) => (
+                                    <button key={emo} className="hover:scale-110 transition-transform">{emo}</button>
+                                  ))}
+                                </div>
+                              </div>
+                              <p className="text-sm text-gray-700">{comment.content}</p>
+                              <div className="flex gap-2 mt-2 text-[11px] text-gray-500">
+                                <button className="hover:text-emerald-600">Like</button>
+                                <button className="hover:text-emerald-600" onClick={() => setActiveReplyIndex(i)}>Reply</button>
+                              </div>
+                              {activeReplyIndex === i && (
+                                <div className="mt-2 flex gap-2 items-start">
+                                  <div className="flex items-center gap-2 text-gray-500">
+                                    <button className="hover:text-gray-700" title="Attach" onClick={() => createFileInputRef.current?.click()}>
+                                      <Paperclip className="w-4 h-4" />
+                                    </button>
+                                    <button className="hover:text-gray-700" title="Location" onClick={handlePickLocation}>
+                                      <MapPin className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                  <Textarea value={commentInput} onChange={(e) => setCommentInput(e.target.value)} placeholder="Reply..." className="flex-1 resize-none min-h-[70px]" />
+                                  <Button onClick={() => { setCommentInput(''); setActiveReplyIndex(null) }} className="bg-emerald-500 hover:bg-emerald-600 rounded-xl">Send</Button>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                      <div className="flex items-center gap-2 mt-3 text-gray-500">
+                        <button className="hover:text-gray-700" title="Attach">
+                          <Paperclip className="w-4 h-4" />
+                        </button>
+                        <button className="hover:text-gray-700" title="Location">
+                          <MapPin className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Textarea value={commentInput} onChange={(e) => setCommentInput(e.target.value)} placeholder="Add a reply..." className="flex-1 resize-none min-h-[80px]" />
+                        <Button onClick={() => setCommentInput('')} className="bg-emerald-500 hover:bg-emerald-600 rounded-xl">Send</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
               </>
             )}
 
@@ -1646,12 +1965,18 @@ export default function Home() {
               </>
             )}
 
-            {/* AI Assistant - Collapsible to Right */}
-            {currentView !== 'messages' && (
-              <div className={`absolute bottom-4 ${aiExpanded ? 'right-4 left-[100px]' : 'left-1/2 -translate-x-1/2'} transition-all duration-300 z-50`}>
-                <div className={`glass-panel ${aiExpanded ? 'rounded-3xl p-4' : 'rounded-2xl p-2'} shadow-2xl border border-white flex ${aiExpanded ? 'flex-row gap-4' : 'items-center gap-3'}`} style={{ maxWidth: aiExpanded ? '500px' : '500px', width: aiExpanded ? 'calc(100vw - 500px)' : '90%' }}>
-                  
-                  {/* Collapsed View */}
+            {/* AI Assistant */}
+            {/* Desktop: keep floating panel behavior */}
+            {!isMobile && currentView !== 'messages' && (
+              <div className={`absolute bottom-4 ${aiExpanded ? 'left-4 right-4' : 'left-1/2 -translate-x-1/2'} transition-all duration-300 z-50`}>
+                <div
+                  className={`glass-panel ${aiExpanded ? 'rounded-3xl p-4' : 'rounded-2xl p-2'} shadow-2xl border border-white flex ${aiExpanded ? 'flex-row gap-4' : 'items-center gap-3'}`}
+                  style={{ width: aiExpanded ? 'min(calc(100vw - 32px), 920px)' : '92%', maxWidth: aiExpanded ? '920px' : '520px' }}
+                  onDragOver={(e) => { e.preventDefault(); setIsAiDragging(true) }}
+                  onDragLeave={() => setIsAiDragging(false)}
+                  onDrop={(e) => { e.preventDefault(); setIsAiDragging(false); handleAiFiles(e.dataTransfer.files) }}
+                >
+                  {/* Collapsed */}
                   {!aiExpanded && (
                     <>
                       <div className="w-9 h-9 bg-emerald-500 rounded-xl flex items-center justify-center text-white shrink-0">
@@ -1665,25 +1990,75 @@ export default function Home() {
                     </>
                   )}
 
-                  {/* Expanded View */}
+                  {/* Expanded */}
                   {aiExpanded && (
                     <>
-                      {/* Left: Input */}
-                      <div className="flex-1 flex flex-col gap-3">
+                      <div className={`flex-1 flex flex-col gap-3 ${isAiDragging ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-white rounded-2xl' : ''}`}>
                         <div className="flex items-center gap-2">
                           <div className="w-8 h-8 bg-emerald-500 rounded-xl flex items-center justify-center text-white">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                           </div>
                           <span className="font-bold text-gray-800 text-sm">AI Assistant</span>
+                          <div className="flex items-center gap-2">
+                            <Button type="button" variant="outline" size="icon" className="rounded-xl" onClick={() => aiFileInputRef.current?.click()}>
+                              <Paperclip className="w-4 h-4" />
+                            </Button>
+                            <Button type="button" variant="outline" size="icon" className="rounded-xl" onClick={() => aiCameraInputRef.current?.click()}>
+                              <Camera className="w-4 h-4" />
+                            </Button>
+                            <Button type="button" variant="outline" size="icon" className="rounded-xl" onClick={() => aiFileInputRef.current?.click()}>
+                              <UploadCloud className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Input value={aiInput} onChange={(e) => setAiInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAIRequest()} placeholder="Type your question..." className="flex-1 bg-white border-gray-200 text-sm" />
-                          <Button onClick={handleAIRequest} className="bg-emerald-500 hover:bg-emerald-600 rounded-xl">Send</Button>
+                        <div className="flex flex-col gap-2">
+                          <Textarea
+                            ref={aiTextAreaRef}
+                            value={aiInput}
+                            onChange={handleAiInputChange}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault()
+                                handleAIRequest()
+                              }
+                            }}
+                            placeholder="Type or paste your question, Shift+Enter for new line..."
+                            className="flex-1 bg-white border-gray-200 text-sm min-h-[100px] max-h-60 resize-none"
+                          />
+                          {aiAttachments.length > 0 && (
+                            <div className="flex flex-wrap gap-2 text-xs text-gray-700">
+                              {aiAttachments.map((file, idx) => (
+                                <span key={idx} className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-1 rounded-lg">
+                                  {file.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <div className="flex gap-2 items-center">
+                            <Button onClick={handleAIRequest} className="bg-emerald-500 hover:bg-emerald-600 rounded-xl px-4">
+                              Send
+                            </Button>
+                            <p className="text-[11px] text-gray-500">Drag & drop files or tap clip/camera/cloud to attach</p>
+                          </div>
+                          <input
+                            ref={aiFileInputRef}
+                            type="file"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => handleAiFiles(e.target.files)}
+                          />
+                          <input
+                            ref={aiCameraInputRef}
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            className="hidden"
+                            onChange={(e) => handleAiFiles(e.target.files)}
+                          />
                         </div>
                       </div>
 
-                      {/* Right: Chat History */}
-                      <div className="w-64 border-l border-gray-200 pl-4 flex flex-col">
+                      <div className="w-64 border-left border-gray-200 pl-4 flex flex-col">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-xs font-bold text-gray-500">Conversation</span>
                           <button onClick={() => setAiExpanded(false)} className="text-gray-400 hover:text-gray-600 p-0.5">
@@ -1708,6 +2083,111 @@ export default function Home() {
                   )}
                 </div>
               </div>
+            )}
+
+            {/* Mobile: dialog modal */}
+            {isMobile && aiExpanded && (
+              <Dialog open={aiExpanded} onOpenChange={setAiExpanded}>
+                <DialogContent
+                  className="w-screen max-w-full sm:max-w-lg p-4 gap-4"
+                  onDragOver={(e) => { e.preventDefault(); setIsAiDragging(true) }}
+                  onDragLeave={() => setIsAiDragging(false)}
+                  onDrop={(e) => { e.preventDefault(); setIsAiDragging(false); handleAiFiles(e.dataTransfer.files) }}
+                >
+                  <DialogHeader className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-9 h-9 bg-emerald-500 rounded-xl flex items-center justify-center text-white">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                      </div>
+                      <div>
+                        <DialogTitle className="text-sm">AI Assistant</DialogTitle>
+                        <DialogDescription>Ask, attach, and get answers.</DialogDescription>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button type="button" variant="outline" size="icon" className="rounded-xl" onClick={() => aiFileInputRef.current?.click()}>
+                        <Paperclip className="w-4 h-4" />
+                      </Button>
+                      <Button type="button" variant="outline" size="icon" className="rounded-xl" onClick={() => aiCameraInputRef.current?.click()}>
+                        <Camera className="w-4 h-4" />
+                      </Button>
+                      <Button type="button" variant="outline" size="icon" className="rounded-xl" onClick={() => aiFileInputRef.current?.click()}>
+                        <UploadCloud className="w-4 h-4" />
+                      </Button>
+                      {aiAttachments.length > 0 && (
+                        <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded-lg">
+                          {aiAttachments.length} attached
+                        </span>
+                      )}
+                    </div>
+                  </DialogHeader>
+
+                  <div className={`flex flex-col ${isAiDragging ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-white rounded-2xl p-2' : ''}`}>
+                    <Textarea
+                      ref={aiTextAreaRef}
+                      value={aiInput}
+                      onChange={handleAiInputChange}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          handleAIRequest()
+                        }
+                      }}
+                      placeholder="Type or paste your question. Shift+Enter for new line..."
+                      className="bg-white border-gray-200 text-sm resize-none min-h-[200px] max-h-[420px] w-full"
+                    />
+                    {aiAttachments.length > 0 && (
+                      <div className="flex flex-wrap gap-2 text-xs text-gray-700 mt-2">
+                        {aiAttachments.map((file, idx) => (
+                          <span key={idx} className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-1 rounded-lg">
+                            {file.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex gap-2 items-center mt-3">
+                      <Button onClick={handleAIRequest} className="bg-emerald-500 hover:bg-emerald-600 rounded-xl px-4">
+                        Send
+                      </Button>
+                      <p className="text-[11px] text-gray-500">Tap icons to attach or drag & drop files.</p>
+                    </div>
+                    <input
+                      ref={aiFileInputRef}
+                      type="file"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => handleAiFiles(e.target.files)}
+                    />
+                    <input
+                      ref={aiCameraInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={(e) => handleAiFiles(e.target.files)}
+                    />
+                  </div>
+
+                  <div className="border-t pt-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold text-gray-500">Conversation</span>
+                    </div>
+                    <ScrollArea className="h-40">
+                      {aiMessages.length === 0 ? (
+                        <p className="text-xs text-gray-400 italic">Start a conversation...</p>
+                      ) : (
+                        <div className="space-y-2">
+                          {aiMessages.map((msg, i) => (
+                            <div key={i} className={`p-2 rounded-lg text-xs ${msg.role === 'user' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-700'}`}>
+                              {msg.content}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </div>
+                </DialogContent>
+              </Dialog>
             )}
           </main>
         </div>
@@ -1835,12 +2315,31 @@ export default function Home() {
                 <Avatar><AvatarImage src={currentUser.avatar} /><AvatarFallback>{currentUser.name[0]}</AvatarFallback></Avatar>
                 <div className="flex-1">
                   <Textarea value={newPost.content} onChange={(e) => setNewPost({ ...newPost, content: e.target.value })} placeholder="What's on your mind?" className="min-h-[120px] resize-none" />
+                  <div className="flex items-center gap-2 mt-2 text-gray-600">
+                    <button title="Attach" className="hover:text-gray-800" onClick={() => createFileInputRef.current?.click()}>
+                      <Paperclip className="w-5 h-5" />
+                    </button>
+                    <button title="Use my location" className="hover:text-gray-800" onClick={handlePickLocation}>
+                      <MapPin className="w-5 h-5" />
+                    </button>
+                    {createPostLocation && <span className="text-xs text-gray-500">Location: {createPostLocation}</span>}
+                  </div>
+                  {createPostAttachments.length > 0 && (
+                    <div className="flex gap-2 mt-2">
+                      {createPostAttachments.map((f, idx) => (
+                        <div key={idx} className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center text-xs text-gray-700">
+                          {f.type.startsWith('image/') ? <img src={URL.createObjectURL(f)} alt={f.name} className="w-full h-full object-cover" /> : <span className="p-2">{f.name}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
               <div>
                 <Label>Image URL (optional)</Label>
                 <Input value={newPost.image} onChange={(e) => setNewPost({ ...newPost, image: e.target.value })} placeholder="https://..." className="mt-1" />
               </div>
+              <input ref={createFileInputRef} type="file" multiple className="hidden" onChange={(e) => handleCreateFiles(e.target.files)} />
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setShowCreatePostModal(false)} className="flex-1">Cancel</Button>
                 <Button onClick={handleCreatePost} className="flex-1 bg-purple-500 hover:bg-purple-600">Post</Button>

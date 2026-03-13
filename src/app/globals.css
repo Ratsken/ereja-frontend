@@ -104,6 +104,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
   }
 }
 
@@ -219,6 +220,15 @@
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* Hide native scrollbars for ScrollArea viewports */
+[data-slot="scroll-area-viewport"] {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+[data-slot="scroll-area-viewport"]::-webkit-scrollbar {
+  display: none;
 }
 
 /* Auction countdown pulse */

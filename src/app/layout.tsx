@@ -11,7 +11,8 @@ const plusJakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: "Ereja | Social Multi-Vendor OS",
-  description: "A comprehensive Social Multi-Vendor Ecosystem with Infinity Canvas, AI-powered marketplace, and real-time collaboration.",
+  description:
+    "A comprehensive Social Multi-Vendor Ecosystem with Infinity Canvas, AI-powered marketplace, and real-time collaboration.",
   keywords: ["Ereja", "Multi-Vendor", "Marketplace", "Social Commerce", "AI Assistant"],
   authors: [{ name: "Ereja Team" }],
   icons: {

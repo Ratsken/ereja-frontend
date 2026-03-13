@@ -54,24 +54,6 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
-  // detect whether a DialogTitle is present in children
-  const hasTitle = React.useMemo(() => {
-    let found = false
-    function walk(nodes: React.ReactNode) {
-      React.Children.forEach(nodes, (child) => {
-        if (found) return
-        if (!React.isValidElement(child)) return
-        const t: any = child.type
-        if (t === DialogPrimitive.Title || t === DialogTitle) {
-          found = true
-          return
-        }
-        if (child.props && child.props.children) walk(child.props.children)
-      })
-    }
-    walk(children)
-    return found
-  }, [children])
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
@@ -83,10 +65,6 @@ function DialogContent({
         )}
         {...props}
       >
-        {/* ensure accessible title exists for screen readers */}
-        {!hasTitle && (
-          <DialogPrimitive.Title className="sr-only">Dialog</DialogPrimitive.Title>
-        )}
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close
