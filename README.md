@@ -54,21 +54,21 @@ A modern, Multi-Vendor Social ecommerce web application
 
 ```bash
 # Install dependencies
-bun install
+npm install
 
-# Start development server
-bun run dev
+# Start development server (Windows-friendly)
+npm run dev
 
 # Build for production
-bun run build
+npm run build
 
 # Start production server
-bun start
+npm run start
 ```
 
 Node: 22.5.1 — use nvm or your version manager (see .nvmrc)
 
-Open [http://localhost:3000](http://localhost:3000) to see your application running.
+Open [http://localhost:9003](http://localhost:9003) or the port shown by `npm run dev` to see your application running.
 
 
 ## 📁 Project Structure
@@ -117,3 +117,14 @@ This scaffold includes a comprehensive set of modern web development tools:
 - **Essential Hooks**: 100+ useful React hooks with ReactUse for common patterns
 
 ---
+
+## 🔔 Recent Updates (March 2026)
+
+- Create Post UI: added functional clip (file attach) and location buttons to the Create/Edit post dialog — attachments are previewed locally and location uses browser Geolocation.
+- Reply / Comment editors: clip and location controls available on reply/comment inputs (they open the same file picker / geolocation).
+- Post cards: removed attach/location icons from individual post footers so attach/location are available only when creating or editing posts/comments.
+- Infinite Scroll: posts feed and comments list now use simple paginated infinite scroll (IntersectionObserver) to load more items as you scroll.
+- Scrollbars: native scrollbars on ScrollArea viewports are hidden for a cleaner UI (CSS added in globals.css).
+- Windows dev script: `dev` script updated to be cross-platform (removed Unix-only `tee` usage).
+
+Note: Attachments are currently local previews (not uploaded to a backend). Geolocation requires browser permission. If you want backend upload or reverse-geocoding, I can add an API endpoint and demo upload flow.
