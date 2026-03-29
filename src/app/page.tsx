@@ -14,14 +14,15 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { toast } from '@/hooks/use-toast'
 import * as Separator from '@radix-ui/react-separator'
-import { Paperclip, Camera, UploadCloud, MapPin } from 'lucide-react'
+import { Paperclip, Camera, UploadCloud, MapPin, FileText, Receipt, FileSpreadsheet, FilePlus2, Clock3 } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 
 // Types
-type ViewType = 'canvas' | 'social' | 'messages' | 'dashboard' | 'reviews'
+type ViewType = 'canvas' | 'social' | 'messages' | 'dashboard' | 'reviews' | 'revenue' | 'documents'
 type CardType = 'stat' | 'product' | 'vendor' | 'service' | 'auction' | 'advert' | 'logistics' | 'event' | 'chat' | 'storefront' | 'order' | 'draft' | 'report'
-type DashboardSection = 'overview' | 'orders' | 'drafts' | 'analytics' | 'shared' | 'vendors' | 'messages' | 'profile' | 'reviews'
+type DashboardSection = 'overview' | 'orders' | 'drafts' | 'analytics' | 'shared' | 'vendors' | 'messages' | 'profile' | 'reviews' | 'revenue'
+type DocumentsNav = 'overview' | 'history'
 type CardStyle = 'default' | 'compact' | 'featured' | 'minimal' | 'glass' | 'gradient'
 
 interface User {
@@ -825,6 +826,7 @@ const PostCard = ({ post, onComment, isActive }: { post: Post; onComment: (post:
   const [liked, setLiked] = useState(post.liked)
   const [likes, setLikes] = useState(post.likes)
   const [saved, setSaved] = useState(false)
+  const [commentDraft, setCommentDraft] = useState('')
 
   const handleLike = () => {
     setLikes(liked ? likes - 1 : likes + 1)
@@ -865,6 +867,24 @@ const PostCard = ({ post, onComment, isActive }: { post: Post; onComment: (post:
           </div>
         </div>
       </div>
+      {isActive && (
+        <div className="px-4 pb-4">
+          <div className="flex items-start gap-2">
+            <Textarea
+              value={commentDraft}
+              onChange={(e) => setCommentDraft(e.target.value)}
+              placeholder="Write a comment..."
+              className="flex-1 resize-none min-h-[70px]"
+            />
+            <Button
+              onClick={() => { setCommentDraft('') }}
+              className="bg-emerald-500 hover:bg-emerald-600 rounded-xl"
+            >
+              Send
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -989,6 +1009,11 @@ export default function Home() {
   const [activePostComments, setActivePostComments] = useState<Post | null>(null)
   const [commentInput, setCommentInput] = useState('')
   const [activeReplyIndex, setActiveReplyIndex] = useState<number | null>(null)
+  const [showRevenueDatePicker, setShowRevenueDatePicker] = useState(false)
+  const [revenueRange, setRevenueRange] = useState('This Month')
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [newReview, setNewReview] = useState({ title: '', content: '' })
+  const [documentsNav, setDocumentsNav] = useState<DocumentsNav>('overview')
 
   // Modals
   const [showLoginModal, setShowLoginModal] = useState(false)
@@ -1037,17 +1062,49 @@ export default function Home() {
   const visiblePosts = posts.slice(0, postsPage * postsPageSize)
   const visibleComments = ALL_COMMENTS.slice(0, commentsPage * commentsPageSize)
 
+  const handleToggleComments = (post: Post) => {
+    setActivePostComments(prev => prev?.id === post.id ? null : post)
+  }
+
   // Sidebar items based on view
   const getSidebarItems = useCallback((view: ViewType): SidebarItem[] => {
+    const canvasItems: SidebarItem[] = [
+      { id: 'overview', name: 'My Dashboard', sub: 'Last sync: 2m ago', icon: '📊' },
+      { id: 'shared', name: 'Shared Canvas', sub: '3 members active', icon: '👥' },
+      { id: 'drafts', name: 'Marketplace Drafts', sub: '12 items pending', icon: '🗂️' },
+      { id: 'orders', name: 'Order Queue', sub: '8 processing', icon: '📦' },
+      { id: 'analytics', name: 'Analytics Hub', sub: 'Weekly report ready', icon: '📈' },
+      { id: 'documents', name: 'Documents', sub: 'Templates & history', icon: '📝' },
+    ]
+
+    const dashboardItems: SidebarItem[] = [
+      { id: 'overview', name: 'Sales Analytics', sub: 'Real-time data', icon: '📊' },
+      { id: 'revenue', name: 'Revenue Reports', sub: 'Monthly summary', icon: '💰' },
+      { id: 'analytics', name: 'User Metrics', sub: 'Active users', icon: '👥' },
+      { id: 'orders', name: 'Order Statistics', sub: 'Fulfillment rate', icon: '📦' }
+    ]
+
+    const revenueItems: SidebarItem[] = [
+      { id: 'overview', name: 'Sales Analytics', sub: 'Real-time data', icon: '📊' },
+      { id: 'revenue', name: 'Revenue Reports', sub: 'Midnight Spreadsheet', icon: '💰' },
+      { id: 'analytics', name: 'User Metrics', sub: 'Active users', icon: '👥' },
+      { id: 'orders', name: 'Order Statistics', sub: 'Fulfillment rate', icon: '📦' }
+    ]
+
+    const documentsItems: SidebarItem[] = [
+      { id: 'overview', name: 'Documents Overview', sub: 'Templates & quick actions', icon: '📝' },
+      { id: 'history', name: 'Recent Records', sub: 'Issued docs', icon: '⏱️' },
+    ]
+
     switch (view) {
       case 'canvas':
-        return [
-          { id: 'overview', name: 'My Dashboard', sub: 'Last sync: 2m ago', icon: '📊' },
-          { id: 'shared', name: 'Shared Canvas', sub: '3 members active', icon: '👥' },
-          { id: 'drafts', name: 'Marketplace Drafts', sub: '12 items pending', icon: '🛍️' },
-          { id: 'orders', name: 'Order Queue', sub: '8 processing', icon: '📦' },
-          { id: 'analytics', name: 'Analytics Hub', sub: 'Weekly report ready', icon: '📈' }
-        ]
+        return canvasItems
+      case 'documents':
+        return documentsItems
+      case 'dashboard':
+        return dashboardItems
+      case 'revenue':
+        return revenueItems
       case 'social':
         return VENDORS_LIST
       case 'messages':
@@ -1055,13 +1112,6 @@ export default function Home() {
           id: chat.id, name: chat.name, sub: chat.lastMessage, img: chat.avatar,
           time: chat.lastMessageTime, unread: chat.unread, online: chat.online
         }))
-      case 'dashboard':
-        return [
-          { id: 'd1', name: 'Sales Analytics', sub: 'Real-time data', icon: '📊' },
-          { id: 'd2', name: 'Revenue Reports', sub: 'Monthly summary', icon: '💰' },
-          { id: 'd3', name: 'User Metrics', sub: 'Active users', icon: '👥' },
-          { id: 'd4', name: 'Order Statistics', sub: 'Fulfillment rate', icon: '📦' }
-        ]
       case 'reviews':
         return [
           { id: 'r1', name: 'All Reviews', sub: `${reviews.length} total reviews`, icon: '⭐' },
@@ -1083,7 +1133,8 @@ export default function Home() {
   }
 
   // Initialize sidebar items with useMemo
-  const sidebarItemsMemo = useMemo(() => getSidebarItems(currentView), [currentView, getSidebarItems])
+  const effectiveSidebarView: ViewType = currentView === 'documents' ? 'canvas' : currentView
+  const sidebarItemsMemo = useMemo(() => getSidebarItems(effectiveSidebarView), [effectiveSidebarView, getSidebarItems])
 
   // Scroll chat
   useEffect(() => {
@@ -1147,20 +1198,42 @@ export default function Home() {
       case 'social': setViewTitle('Nearby Vendors'); break
       case 'messages': setViewTitle('Chats'); break
       case 'dashboard': setViewTitle('Analytics'); break
+      case 'revenue': setViewTitle('Revenue Reports'); break
       case 'reviews': setViewTitle('Reviews'); break
+      case 'documents': setViewTitle('Documents'); break
     }
   }
 
   // Handle sidebar item click
   const handleSidebarItemClick = (itemId: string) => {
+    if (itemId === 'documents') {
+      setCurrentView('documents')
+      setViewTitle('Documents')
+      setDocumentsNav('overview')
+      setActiveSidebarItem('documents')
+      if (isMobile) setShowMobileSubSidebar(true)
+      return
+    }
+    if (currentView === 'documents') {
+      setCurrentView('canvas')
+      setDashboardSection(itemId as DashboardSection)
+      setActiveSidebarItem(itemId)
+      return
+    }
     setActiveSidebarItem(itemId)
+    if (itemId === 'revenue') {
+      setCurrentView('revenue')
+      setDashboardSection('revenue')
+      setShowRevenueDatePicker(false)
+      return
+    }
     if (currentView === 'messages') {
       const chat = chats.find(c => c.id === itemId)
       if (chat) setActiveChat(chat)
-    } else if (currentView === 'canvas') {
+    } else if (currentView === 'canvas' || currentView === 'dashboard' || currentView === 'revenue') {
+      if (currentView === 'revenue') setCurrentView('dashboard')
       setDashboardSection(itemId as DashboardSection)
     }
-    if (isMobile) setShowMobileSubSidebar(false)
   }
 
   // Send message
@@ -1343,6 +1416,98 @@ export default function Home() {
       case 'analytics': return cards.filter(c => c.type === 'report' || c.type === 'stat')
       default: return cards.filter(c => ['product', 'auction', 'vendor', 'service', 'event', 'advert', 'storefront', 'stat'].includes(c.type))
     }
+  }
+
+  const renderMonth = (label: string, offset: number, days: number, range?: [number, number]) => (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-sm font-semibold text-[#0F172A]">
+        <span>{label}</span>
+        <span className="text-xs text-gray-500">2026</span>
+      </div>
+      <div className="grid grid-cols-7 text-[11px] text-gray-400">
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => <span key={d} className="text-center py-1">{d}</span>)}
+      </div>
+      <div className="grid grid-cols-7 gap-1 text-sm">
+        {Array.from({ length: offset }).map((_, i) => <span key={`b-${label}-${i}`} className="py-1.5" />)}
+        {Array.from({ length: days }).map((_, i) => {
+          const day = i + 1
+          const inRange = range && day >= range[0] && day <= range[1]
+          return (
+            <span
+              key={`${label}-${day}`}
+              className={`text-center py-1.5 rounded-full cursor-pointer transition-colors ${inRange ? 'bg-[#3B82F6] text-white shadow' : 'hover:bg-blue-50 text-[#0F172A]'}`}
+            >
+              {day}
+            </span>
+          )
+        })}
+      </div>
+    </div>
+  )
+
+  const revenueSeries = [48, 62, 70, 64, 86, 104, 120, 142, 155, 180]
+  const revenueMax = Math.max(...revenueSeries)
+  const areaLinePoints = revenueSeries.map((v, i) => {
+    const x = (i / (revenueSeries.length - 1)) * 100
+    const y = 120 - (v / revenueMax) * 100
+    return `${x},${y}`
+  }).join(' ')
+  const areaPath = `M0,120 L${areaLinePoints.replace(/ /g, ' L')} L100,120 Z`
+  const scrubIndex = 6
+  const scrubX = (scrubIndex / (revenueSeries.length - 1)) * 100
+  const scrubValue = revenueSeries[scrubIndex]
+
+  const donutSlices = [
+    { label: 'Subscriptions', value: 58, color: '#3B82F6' },
+    { label: 'Marketplace', value: 22, color: '#00E5E5' },
+    { label: 'Services', value: 15, color: '#6366F1' },
+  ]
+  const donutTotal = donutSlices.reduce((acc, s) => acc + s.value, 0)
+  let donutCursor = 0
+  const donutGradient = donutSlices.map((slice) => {
+    const start = donutCursor
+    const end = start + (slice.value / 100) * 360
+    donutCursor = end
+    return `${slice.color} ${start}deg ${end}deg`
+  }).concat(`${donutCursor < 360 ? '#E5E7EB ' + donutCursor + 'deg 360deg' : ''}`).join(', ')
+
+  const documentTemplates = [
+    {
+      id: 'invoice',
+      title: 'Invoice Template',
+      description: 'Bill clients with tax, terms, and payment links.',
+      accent: 'bg-emerald-50 text-emerald-700',
+      icon: <FileText className="w-5 h-5" />,
+    },
+    {
+      id: 'credit',
+      title: 'Credit Note',
+      description: 'Issue adjustments and store credits in seconds.',
+      accent: 'bg-blue-50 text-blue-700',
+      icon: <Receipt className="w-5 h-5" />,
+    },
+    {
+      id: 'quote',
+      title: 'Quotation',
+      description: 'Send polished quotes with sign + pay options.',
+      accent: 'bg-purple-50 text-purple-700',
+      icon: <FileSpreadsheet className="w-5 h-5" />,
+    },
+  ]
+
+  const recentDocuments = [
+    { id: 'd1', date: 'Mar 16, 2026', type: 'Invoice', recipient: 'Acme Corp', amount: '$4,200', status: 'Sent' },
+    { id: 'd2', date: 'Mar 15, 2026', type: 'Quotation', recipient: 'Northwind', amount: '$7,150', status: 'Pending' },
+    { id: 'd3', date: 'Mar 14, 2026', type: 'Credit Note', recipient: 'Lumina Labs', amount: '-$620', status: 'Issued' },
+    { id: 'd4', date: 'Mar 13, 2026', type: 'Invoice', recipient: 'Orbit Design', amount: '$2,980', status: 'Paid' },
+    { id: 'd5', date: 'Mar 12, 2026', type: 'Invoice', recipient: 'Foxtrot LLC', amount: '$1,240', status: 'Draft' },
+  ]
+  const docStatusStyles: Record<string, string> = {
+    Sent: 'bg-blue-50 text-blue-700',
+    Pending: 'bg-amber-50 text-amber-700',
+    Issued: 'bg-indigo-50 text-indigo-700',
+    Paid: 'bg-emerald-50 text-emerald-700',
+    Draft: 'bg-gray-100 text-gray-600',
   }
 
   return (
@@ -1560,12 +1725,12 @@ export default function Home() {
                       <div className="flex gap-2">
                         <div className="flex-1 pr-1 space-y-2">
                           {visiblePosts.map((post) => (
-                            <PostCard
-                              key={post.id}
-                              post={post}
-                              isActive={activePostComments?.id === post.id}
-                              onComment={(p) => setActivePostComments(p)}
-                            />
+                          <PostCard
+                            key={post.id}
+                            post={post}
+                            isActive={activePostComments?.id === post.id}
+                            onComment={handleToggleComments}
+                          />
                           ))}
                           <div ref={feedEndRef} />
                         </div>
@@ -1660,7 +1825,7 @@ export default function Home() {
                             key={post.id}
                             post={post}
                             isActive={activePostComments?.id === post.id}
-                            onComment={(p) => setActivePostComments(p)}
+                            onComment={handleToggleComments}
                           />
                         ))}
                         <div ref={feedEndRef} />
@@ -1879,6 +2044,258 @@ export default function Home() {
               </>
             )}
 
+            {/* Revenue Reports View */}
+            {currentView === 'revenue' && (
+              <div className="flex-1 overflow-auto bg-[#F9FBFF]">
+                <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-white/60 px-6 py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-[#3B82F6] rounded-full" />
+                    <h3 className="font-semibold text-[#0F172A]">Revenue Reports</h3>
+                  </div>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowRevenueDatePicker((v) => !v)}
+                      className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 backdrop-blur-xl border border-white/60 shadow-md text-sm font-semibold text-[#0F172A] hover:shadow-lg transition-all"
+                    >
+                      <span>{revenueRange}</span>
+                      <svg className="w-4 h-4 text-[#3B82F6]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M6 9l6 6 6-6" /></svg>
+                    </button>
+                    {showRevenueDatePicker && (
+                      <div className="absolute right-0 mt-3 w-[420px] bg-white/70 backdrop-blur-2xl shadow-2xl rounded-2xl border border-white/60 p-4 space-y-3">
+                        <div className="flex items-center justify-between text-[#0F172A]">
+                          <span className="text-sm font-semibold">Select range</span>
+                          <button onClick={() => setShowRevenueDatePicker(false)} className="text-gray-500 hover:text-gray-700">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-[120px_1fr] gap-4">
+                          <div className="flex flex-col gap-2">
+                            {['Today', 'Last 7 Days', 'This Month', 'Fiscal Year'].map((preset) => (
+                              <button
+                                key={preset}
+                                onClick={() => { setRevenueRange(preset); setShowRevenueDatePicker(false) }}
+                                className={`text-sm text-left px-3 py-2 rounded-xl transition-all ${revenueRange === preset ? 'bg-[#3B82F6] text-white shadow-lg' : 'bg-white/70 text-[#0F172A] hover:bg-blue-50'}`}
+                              >
+                                {preset}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 text-[#0F172A]">
+                            {renderMonth('March', 4, 31, revenueRange === 'Last 7 Days' ? [20, 26] : revenueRange === 'Fiscal Year' ? [1, 31] : undefined)}
+                            {renderMonth('April', 1, 30, revenueRange === 'Fiscal Year' ? [1, 30] : [5, 18])}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </header>
+
+                <div className="max-w-6xl mx-auto p-6 space-y-6">
+                  <div className="grid gap-4 md:grid-cols-3">
+                    {[
+                      { label: 'Total Revenue', value: '$1.24M', change: '+12.4%' },
+                      { label: 'Avg Order Value', value: '$182.40', change: '+4.2%' },
+                      { label: 'Net Retention', value: '108%', change: '+3.1%' }
+                    ].map((kpi) => (
+                      <div key={kpi.label} className="bg-white/70 backdrop-blur-xl border border-white/60 rounded-2xl p-4 shadow-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-gray-600">{kpi.label}</span>
+                          <span className="text-xs font-bold text-[#3B82F6]">{kpi.change}</span>
+                        </div>
+                        <p className="text-2xl font-bold text-[#0F172A]">{kpi.value}</p>
+                        <div className="mt-3 h-2 rounded-full bg-white/60 overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-[#3B82F6] via-[#00E5E5] to-[#3B82F6]" style={{ width: '82%' }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid gap-4 lg:grid-cols-[2fr_1fr] items-stretch">
+                    <div className="bg-white/70 backdrop-blur-2xl border border-white/60 rounded-3xl p-5 shadow-xl relative overflow-hidden">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <p className="text-sm text-gray-600">Revenue Flow</p>
+                          <h4 className="text-xl font-bold text-[#0F172A]">Midnight Spreadsheet</h4>
+                        </div>
+                        <span className="text-xs font-semibold text-[#3B82F6] bg-[#3B82F6]/10 px-3 py-1 rounded-full">Area Chart</span>
+                      </div>
+                      <div className="relative h-72 rounded-2xl bg-white/40 border border-white/60 overflow-hidden">
+                        <svg viewBox="0 0 100 120" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
+                          <defs>
+                            <linearGradient id="revGradient" x1="0" x2="0" y1="0" y2="1">
+                              <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.55" />
+                              <stop offset="100%" stopColor="#3B82F6" stopOpacity="0" />
+                            </linearGradient>
+                          </defs>
+                          <path d={areaPath} fill="url(#revGradient)" />
+                          <polyline points={areaLinePoints} fill="none" stroke="#3B82F6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                          <line x1={scrubX} x2={scrubX} y1="0" y2="120" stroke="#0EA5E9" strokeWidth="1.2" strokeDasharray="4 4" />
+                          <circle cx={scrubX} cy={120 - (scrubValue / revenueMax) * 100} r="2.2" fill="#00E5E5" stroke="#0F172A" strokeWidth="0.6" />
+                        </svg>
+                        <div className="absolute top-4 right-4 bg-[#0F172A] text-white text-xs px-3 py-2 rounded-xl shadow-lg">
+                          <p className="font-semibold">Hover Scrubber</p>
+                          <p className="text-[11px] text-gray-200">Week 28 · ${scrubValue}k</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white/70 backdrop-blur-2xl border border-white/60 rounded-3xl p-5 shadow-xl flex flex-col gap-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600">Channel Split</p>
+                          <h4 className="text-lg font-bold text-[#0F172A]">Donut Chart</h4>
+                        </div>
+                        <span className="text-xs font-semibold text-[#00E5E5] bg-[#00E5E5]/10 px-3 py-1 rounded-full">Live</span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="relative w-44 h-44 mx-auto">
+                          <div className="w-full h-full rounded-full shadow-inner" style={{ background: `conic-gradient(${donutGradient})` }} />
+                          <div className="absolute inset-4 rounded-full bg-white/80 backdrop-blur-xl border border-white/60 flex flex-col items-center justify-center text-center">
+                            <p className="text-xs text-gray-500">Total Revenue</p>
+                            <p className="text-xl font-bold text-[#0F172A]">$482k</p>
+                            <span className="text-[11px] text-[#3B82F6] font-semibold">+9.4%</span>
+                          </div>
+                        </div>
+                        <div className="flex-1 space-y-3">
+                          {donutSlices.map((slice) => (
+                            <div key={slice.label} className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="w-3 h-3 rounded-full" style={{ background: slice.color }} />
+                                <p className="text-sm font-semibold text-[#0F172A]">{slice.label}</p>
+                              </div>
+                              <p className="text-sm text-gray-600">{slice.value}%</p>
+                            </div>
+                          ))}
+                          <div className="flex items-center justify-between pt-2 border-t border-white/60">
+                            <p className="text-sm font-semibold text-[#0F172A]">Unmapped</p>
+                            <p className="text-sm text-gray-600">{(100 - donutTotal).toFixed(0)}%</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-3">
+                    {[
+                      { title: 'Payouts Scheduled', value: '$182k', badge: 'Today' },
+                      { title: 'Refund Rate', value: '1.2%', badge: 'Healthy' },
+                      { title: 'ARPU', value: '$42.10', badge: '↑ 6%' },
+                    ].map((item) => (
+                      <div key={item.title} className="bg-white/70 backdrop-blur-xl border border-white/60 rounded-2xl p-4 shadow-lg flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-gray-600">{item.title}</p>
+                          <p className="text-xl font-bold text-[#0F172A]">{item.value}</p>
+                        </div>
+                        <span className="text-xs font-semibold px-3 py-1 rounded-full bg-[#3B82F6]/10 text-[#3B82F6]">{item.badge}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Documents View */}
+            {currentView === 'documents' && (
+              <div className="flex-1 overflow-auto bg-gray-50">
+                <header className="h-[60px] px-6 flex items-center justify-between glass-panel border-b border-gray-200 shrink-0 z-30">
+                  <div className="flex items-center gap-3">
+                    <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full" />
+                    <div>
+                      <h3 className="font-semibold text-gray-800">Documents Overview</h3>
+                      <p className="text-xs text-gray-500">Templates, issuance, and history</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {(['overview', 'history'] as DocumentsNav[]).map((nav) => (
+                      <Button
+                        key={nav}
+                        variant={documentsNav === nav ? 'default' : 'outline'}
+                        size="sm"
+                        className={`rounded-full ${documentsNav === nav ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'border-gray-200 text-gray-700'}`}
+                        onClick={() => { setDocumentsNav(nav); setActiveSidebarItem(nav) }}
+                      >
+                        {nav === 'overview' ? 'Overview' : 'History'}
+                      </Button>
+                    ))}
+                  </div>
+                </header>
+
+                <ScrollArea className="flex-1 p-6 bg-gray-50">
+                  {documentsNav === 'overview' && (
+                    <div className="grid gap-4 md:grid-cols-3 mb-6">
+                      {documentTemplates.map((template) => (
+                        <div key={template.id} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${template.accent}`}>
+                                {template.icon}
+                              </div>
+                              <div>
+                                <h4 className="font-semibold text-gray-800 text-sm">{template.title}</h4>
+                                <p className="text-xs text-gray-500">{template.description}</p>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="text-[11px] border-gray-200 bg-gray-50">Template</Badge>
+                          </div>
+                          <div className="flex items-center justify-between text-xs text-gray-500">
+                            <span className="flex items-center gap-1"><Clock3 className="w-3 h-3" /> Avg. time: 42s</span>
+                            <span className="text-emerald-600 font-semibold">Auto-fill ready</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button className="flex-1 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm">
+                              <FilePlus2 className="w-4 h-4 mr-2" /> Create New
+                            </Button>
+                            <Button variant="outline" className="rounded-xl text-sm border-gray-200">Preview</Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h4 className="font-semibold text-gray-800 text-sm">Recent Records</h4>
+                        <p className="text-xs text-gray-500">Already issued documents with status</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="rounded-xl border-gray-200">Export CSV</Button>
+                        <Button size="sm" className="rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white">New Document</Button>
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-left text-gray-700">
+                        <thead className="text-xs uppercase text-gray-500 bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-2 font-semibold">Date</th>
+                            <th className="px-4 py-2 font-semibold">Type</th>
+                            <th className="px-4 py-2 font-semibold">Recipient</th>
+                            <th className="px-4 py-2 font-semibold">Amount</th>
+                            <th className="px-4 py-2 font-semibold">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {recentDocuments.map((doc) => (
+                            <tr key={doc.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 whitespace-nowrap text-gray-700">{doc.date}</td>
+                              <td className="px-4 py-3 whitespace-nowrap font-semibold text-gray-800">{doc.type}</td>
+                              <td className="px-4 py-3 whitespace-nowrap text-gray-700">{doc.recipient}</td>
+                              <td className="px-4 py-3 whitespace-nowrap font-semibold text-gray-900">{doc.amount}</td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${docStatusStyles[doc.status] || 'bg-gray-100 text-gray-600'}`}>
+                                  {doc.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
+
             {/* Reviews View */}
             {currentView === 'reviews' && (
               <>
@@ -1896,7 +2313,10 @@ export default function Home() {
                       <option>2 Stars</option>
                       <option>1 Star</option>
                     </select>
-                    <button className="bg-yellow-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg hover:bg-yellow-600 transition-all flex items-center gap-2">
+                    <button
+                      className="bg-yellow-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg hover:bg-yellow-600 transition-all flex items-center gap-2"
+                      onClick={() => { setShowReviewForm(true); setNewReview({ title: '', content: '' }) }}
+                    >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
                       Write Review
                     </button>
@@ -1904,6 +2324,31 @@ export default function Home() {
                 </header>
 
                 <ScrollArea className="flex-1 p-6 bg-gray-50">
+                  {showReviewForm && (
+                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-yellow-100 mb-6">
+                      <h4 className="font-semibold text-gray-800 mb-3">Write a Review</h4>
+                      <div className="space-y-3">
+                        <Input
+                          placeholder="Review title"
+                          value={newReview.title}
+                          onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
+                          className="bg-gray-50"
+                        />
+                        <Textarea
+                          placeholder="Share your experience..."
+                          value={newReview.content}
+                          onChange={(e) => setNewReview({ ...newReview, content: e.target.value })}
+                          className="min-h-[140px]"
+                        />
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setShowReviewForm(false)}>Cancel</Button>
+                          <Button className="bg-yellow-500 hover:bg-yellow-600" onClick={() => { setShowReviewForm(false); setNewReview({ title: '', content: '' }) }}>
+                            Submit
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {/* Stats Overview */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
